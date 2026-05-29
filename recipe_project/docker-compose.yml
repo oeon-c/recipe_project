@@ -14,7 +14,7 @@ services:
       #MARIADB_USER: user
       #MARIADB_PASSWORD: password
     ports:
-      - "3306:3306"                  # 9. [호스트 포트 : 도커 내부 포트] 밖에서 3306으로 찌르면 내부 3306으로 연결해라
+      - "3307:3306"                  # 9. [호스트 포트 : 도커 내부 포트] 밖에서 3306으로 찌르면 내부 3306으로 연결해라
     volumes:
       - mariadb_data:/var/lib/mysql
 
