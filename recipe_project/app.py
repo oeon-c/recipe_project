@@ -1,24 +1,33 @@
-import pandas as pd
-import numpy as np
-from flask import Flask
-from sqlalchemy import create_engine
-from flask import render_template
-from sqlalchemy import text
-import re
+from flask import Flask, request, render_template
+from flask_cors import CORS
+import pymysql
 
 app = Flask(__name__)   #플라스크 앱 생성
-
-df0 = pd.read_csv("recipe_data.csv")
-
-df = df0.drop(axis=1,labels=["링크", "기본 조리도구", "추가 조리도구"], inplace=False)
-df.dropna(axis=1, how='all', inplace=True)
-
-df.drop(axis=0, labels=74, inplace=True)        #마지막행 NaN 지우기 
+CORS(app)
 
 
-# [데이터 주입 구간]
-engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')
-df.to_sql(name='recipe', con=engine, if_exists='append', index=False)
+def get_db_connection():
+    return pymysql.connect(
+        host='mariadb', 
+        user='user',
+        password='password',
+        db='recipe_db',
+        charset='utf8'
+    )
+
+conn = get_db_connection()
+
+#df0 = pd.read_csv("recipe_data.csv")
+
+#df = df0.drop(axis=1,labels=["링크", "기본 조리도구", "추가 조리도구"], inplace=False)
+#df.dropna(axis=1, how='all', inplace=True)
+
+#df.drop(axis=0, labels=74, inplace=True)        #마지막행 NaN 지우기 
+
+
+## [데이터 주입 구간]
+#engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')
+#df.to_sql(name='recipe', con=engine, if_exists='append', index=False)
 
 
 @app.route('/')
