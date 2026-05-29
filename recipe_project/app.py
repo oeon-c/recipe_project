@@ -19,6 +19,10 @@ engine = create_engine('mysql+pymysql://root:ubuntu@mariadb:3306/recipe_db')
 df.to_sql(name='recipe', con=engine, if_exists='append', index=False)
                 #데이터베이스 속 테이블 명: recipe
 
+@app.route('/')
+def index():
+    return render_template('init.html')
+
 @app.route('/select-ingredients')
 def select_ingredients():
     ingredients_set = set()
