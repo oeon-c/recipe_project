@@ -3,28 +3,31 @@ version: '3.3'                       # 1. 이 설계도면의 문법 버전 (3.3
 services:                            # 2. 이제부터 만들 컴퓨터(컨테이너)들 명단 시작!
 
   # 1. 마리아DB 데이터베이스 서버
+  
   mariadb:                           
     image: mariadb:latest            # 3. 도커 허브에서 최신(latest) 마리아DB 순정 이미지를 다운받아라
     container_name: recipe_mariadb   # 4. 이 컴퓨터의 이름은 'recipe_mariadb'로 부르겠다
     restart: always                  # 5. 컴퓨터가 예기치 못하게 꺼지면 자동으로 다시 켜라
     environment:                     # 6. 마리아DB 컴퓨터 내부의 기본 환경 설정(변수)들
-      MARIADB_ROOT_PASSWORD: '1234'    # 7. 최고 관리자(root)의 비밀번호는 '1234'로 세팅한다
-      MARIADB_DATABASE: 'recipe_db'   # 8. 컴퓨터가 켜지자마자 'recipe_db'라는 데이터베이스 방을 만들어라
+      MARIADB_ROOT_PASSWORD: '1234'
+      MARIADB_DATABASE: 'recipe_db' 
+      #MARIADB_USER: user
+      #MARIADB_PASSWORD: password
     ports:
-      - "3306:3306"                  # 9. [맥북 포트 : 도커 내부 포트] 밖에서 3306으로 찌르면 내부 3306으로 연결해라
+      - "3306:3306"                  # 9. [호스트 포트 : 도커 내부 포트] 밖에서 3306으로 찌르면 내부 3306으로 연결해라
     volumes:
-      - mariadb_data:/var/lib/mysql  # 10. 데이터 보존창고 연결 (도커가 꺼져도 데이터가 지워지지 않게 하드디스크에 저장)
+      - mariadb_data:/var/lib/mysql
 
 
-  # ----------------------------------------------------
-  # [두 번째 컴퓨터] 파이썬 플라스크 웹 서버
-  # ----------------------------------------------------
+
+  # 2.파이썬 플라스크 웹 서버
+
   web:                               
-    build: .                         # 11. 현재 폴더('.')에 있는 'Dockerfile'을 읽어서 이 컴퓨터를 조립해라
+    build: ./flask                         # 11. 현재 폴더('.')에 있는 'Dockerfile'을 읽어서 이 컴퓨터를 조립해라
     container_name: recipe_flask     # 12. 이 컴퓨터의 이름은 'recipe_flask'로 부르겠다
     restart: always                  # 13. 문제가 생겨서 꺼지면 자동으로 다시 켜라
     ports:
-      - "5000:5000"                  # 14. 사용자가 인터넷 주소창에 5000번 포트로 들어오면 플라스크로 연결해라
+      - "5001:5000"                  # 14. 사용자가 인터넷 주소창에 5000번 포트로 들어오면 플라스크로 연결해라
     environment:
       - FLASK_ENV=development        # 15. 플라스크를 '개발 모드'로 켠다 (에러 메시지를 자세히 보여줌)
     depends_on:
