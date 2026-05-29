@@ -1,6 +1,5 @@
 # recipe_project
 
-Dockerfile: 환경 생성용 파일<br>
 docker-compose.yml: flask와 mariadb 컨테이너 연결용 설정 파일<br>
 init.sql: mariadb 초키 데이터베이스 파일로, 현재 데이터 저장해둔 파일 사용<br>
 app.py: flask 벡엔드 소스코드 저장용 파일<br>
