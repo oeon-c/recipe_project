@@ -28,23 +28,25 @@ def init_db():
             print(f"DB 대기 중...({i+5}/5)")
             time.sleep(3)
 
-with engine.connect() as conn:
-    try:
-        count = conn.execute(text("SELECT COUNT(*) FROM recipe")).scalar()
-        if count > 0:
-            printf("이미 데이터 있음 -스킵")
-    except:
-        pass
+    with engine.connect() as conn:
+        try:
+            count = conn.execute(text("SELECT COUNT(*) FROM recipe")).scalar()
+            if count > 0:
+                printf("이미 데이터 있음 -스킵")
+                return engine
+        except:
+            pass
 
 
-df0 = pd.read_csv("recipe_data.csv")
-df = df0.drop(axis=1,labels=["링크", "기본 조리도구", "추가 조리도구"], inplace=False)
-df.dropna(axis=1, how='all', inplace=True)
-df.drop(axis=0, labels=74, inplace=True)        #마지막행 NaN 지우기 
+    df0 = pd.read_csv("recipe_data.csv")
+    df = df0.drop(axis=1,labels=["링크", "기본 조리도구", "추가 조리도구"], inplace=False)
+    df.dropna(axis=1, how='all', inplace=True)
+    df.drop(axis=0, labels=74, inplace=True)        #마지막행 NaN 지우기 
 
-df.to_sql(name-'recipe', con=engine, if_exists='append', index=False)
+    df.to_sql(name-'recipe', con=engine, if_exists='append', index=False)
+    return engine
 
-init_db()
+engine = init_db()
 
 
 ## [데이터 주입 구간]
