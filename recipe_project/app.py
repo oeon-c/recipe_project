@@ -43,7 +43,7 @@ def init_db():
     df.dropna(axis=1, how='all', inplace=True)
     df.drop(axis=0, labels=74, inplace=True)        #마지막행 NaN 지우기 
 
-    df.to_sql(name-'recipe', con=engine, if_exists='append', index=False)
+    df.to_sql(name='recipe', con=engine, if_exists='append', index=False)
     return engine
 
 engine = init_db()
