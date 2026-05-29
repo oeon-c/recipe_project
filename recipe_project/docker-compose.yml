@@ -32,6 +32,8 @@ services:
       - FLASK_ENV=development        # 15. 플라스크를 '개발 모드'로 켠다 (에러 메시지를 자세히 보여줌)
     depends_on:
       - mariadb                        # 16. [★중요] 마리아DB 컴퓨터가 '먼저' 완전히 켜진 다음에 이 플라스크를 켜라
+    volumes:
+      - ./recipe_data.csv:/app/recipe_data.csv
 
 
 # [저장 공간 설정]
