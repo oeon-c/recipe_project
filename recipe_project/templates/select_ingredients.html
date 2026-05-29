@@ -1,47 +1,47 @@
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width">
-        <title>갖고 있는 재료 선택하기</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <h1>
-        갖고 있는 재료 선택하기
-    </h1>
-    <div class="search-selection">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>갖고 있는 재료 선택하기</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 style="text-align: center;">갖고 있는 재료 선택하기</h1>
+
+    <div class="search-section">
         <input type="text" class="search-bar" placeholder="필요한 재료를 검색해 보세요!">
     </div>
 
-    <div class="selected-selection">
-        <h3 class="selection-title">선택된 재료</h3>
+    <div class="selected-section">
+        <h3 class="section-title">선택된 재료</h3>
         <div class="selected-container">
-            <span class="test-box selected-badge">양파 <b style="color:#ff5722; margin-left: 5px;"></b></span>
-            <span class="text-box selected-badge">계란 <b style = "color: #ff5722; margin-left: 5px;"></b></span>
+            <span class="text-box selected-badge">양파 <b style="color:#ff5722; margin-left: 5px;">X</b></span>
+            <span class="text-box selected-badge">계란 <b style="color: #ff5722; margin-left: 5px;">X</b></span>
         </div>
     </div>
 
-    <div class="ingredients-list-selection">
-        <h3 class="selection-title">전체 재료 목록</h3>
+    <div class="ingredients-list-section">
+        <h3 class="section-title">전체 재료 목록</h3>
         <div class="ingredients-grid">
             {% if ingredients %}
                 {% for ingredient in ingredients %}
                 <label class="ingredient-item">
-                    <input type="checkbox" name="ingredients" value="onion">
-                    <span class="ingredient-name">양파</span>
+                    <input type="checkbox" name="ingredients" value="{{ ingredient.name }}">
+                    <span class="ingredient-name">{{ ingredient.name }}</span>
                 </label>
                 {% endfor %}
             {% else %}
-                <p style="padding: 10px; color: #999;">등록된 재료가 없습니다.</p>
-            {%endif%}
+                <p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">등록된 재료가 없습니다.</p>
+            {% endif %}
         </div>
     </div>
 
     <div class="box-container-center" style="margin-top: 50px">
-        <a href="init.html" style="text-decoration: none;">
+        <a href="/" style="text-decoration: none;">
             <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">이전으로</span>
         </a>
         <a href="recipe_list.html" style="text-decoration: none;">
             <span class="text-box" style="background-color: #ff5722; color: white;">추천 레시피 찾기</span>
         </a>
     </div>
-</html>
+</body>
