@@ -3,7 +3,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>갖고 있는 재료 선택하기</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h1 style="text-align: center;">갖고 있는 재료 선택하기</h1>
@@ -40,8 +40,9 @@
         <a href="/" style="text-decoration: none;">
             <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">이전으로</span>
         </a>
-        <a href="recipe_list.html" style="text-decoration: none;">
+        <a href="/recipe-list" style="text-decoration: none;">
             <span class="text-box" style="background-color: #ff5722; color: white;">추천 레시피 찾기</span>
         </a>
     </div>
 </body>
+</html>
