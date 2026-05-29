@@ -14,10 +14,14 @@ df.drop(axis=0, labels=74, inplace=True)        #마지막행 NaN 지우기
 print(df)
 
 
-engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')
+engine = create_engine('mysql+pymysql://root:1234@mariadb:3306')
                 #password:ubuntu, service명:mariadb, 데이터베이스명: recipe_db
 df.to_sql(name='recipe', con=engine, if_exists='append', index=False)
                 #데이터베이스 속 테이블 명: recipe
+
+with root_engine.connect() as conn:
+    conn.execute(text("CREATE DATABASE IF NOT EXISTS recipe_db;"))
+    conn.commit()
 
 @app.route('/')
 def index():
