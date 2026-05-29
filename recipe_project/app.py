@@ -49,11 +49,6 @@ def init_db():
 engine = init_db()
 
 
-## [데이터 주입 구간]
-#engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')
-#df.to_sql(name='recipe', con=engine, if_exists='append', index=False)
-
-
 @app.route('/')
 def index():
     return render_template('init.html')
