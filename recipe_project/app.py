@@ -12,6 +12,8 @@ df.dropna(axis=1, how='all', inplace=True)
 
 df.drop(axis=0, labels=74, inplace=True)        #마지막행 NaN 지우기 
 
+print("마리아DB가 완전히 부팅될 때까지 7초간 대기합니다...")
+time.sleep(7)  # 👈 2. 이 줄을 'root_engine' 만들기 바로 윗줄에 넣어주세요!
 
 # [데이터베이스 방 자동 생성 구간]
 root_engine = create_engine('mysql+pymysql://root:1234@mariadb:3306')
@@ -22,6 +24,8 @@ with root_engine.connect() as conn:
 # [데이터 주입 구간]
 engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')
 df.to_sql(name='recipe', con=engine, if_exists='append', index=False)
+
+
 @app.route('/')
 def index():
     return render_template('init.html')
