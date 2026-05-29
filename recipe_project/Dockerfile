@@ -5,7 +5,7 @@ WORKDIR /app
 COPY app.py .
 COPY templates/ ./templates/
 
-RUN pip install flask pymysql flask-cors
+RUN pip install flask pymysql flask-cors pandas sqlalchemy
 
 ## 패키지 명단 먼저 복사하고 설치
 #COPY requirements.txt .
