@@ -1,16 +1,20 @@
-FROM python:3
+FROM python:3.10-slim
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# 패키지 명단 먼저 복사하고 설치
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pup install pymysql
+COPY app.py .
+COPY templates/ ./templates/
 
-# 나머지 내 소스코드와 CSV 파일들을 통째로 복사
-COPY . .
+RUN pup install flask pymysql
 
-EXPOSE 8000
+## 패키지 명단 먼저 복사하고 설치
+#COPY requirements.txt .
+#RUN pip install --no-cache-dir -r requirements.txt
+#RUN pup install pymysql
+
+
+## 나머지 내 소스코드와 CSV 파일들을 통째로 복사
+#COPY . .
 
 # 실행할 파일 이름 지정
-CMD ["python", "./app.py"]
+CMD ["python", "app.py"]
