@@ -1,42 +1,38 @@
-version: '3.3'
+version: '3.8'                       # 1. 이 설계도면의 문법 버전 (3.8 버전 양식으로 작성함)
 
-services:
-  db:
-    image: mariadb:10.11
-    container_name: recipe_mariadb
-    restart: always
-    command: --secure-file-priv=""
-    environment:
-      MARIADB_ROOT_PASSWORD: rootpassword
-      MARIADB_DATABASE: recipe_db
+services:                            # 2. 이제부터 만들 컴퓨터(컨테이너)들 명단 시작!
+  
+  # ----------------------------------------------------
+  # [첫 번째 컴퓨터] 마리아DB 데이터베이스 서버
+  # ----------------------------------------------------
+  mariadb:                           
+    image: mariadb:latest            # 3. 도커 허브에서 최신(latest) 마리아DB 순정 이미지를 다운받아라
+    container_name: recipe_mariadb   # 4. 이 컴퓨터의 이름은 'recipe_mariadb'로 부르겠다
+    restart: always                  # 5. 컴퓨터가 예기치 못하게 꺼지면 자동으로 다시 켜라
+    environment:                     # 6. 마리아DB 컴퓨터 내부의 기본 환경 설정(변수)들
+      MYSQL_ROOT_PASSWORD: '1234'    # 7. 최고 관리자(root)의 비밀번호는 '1234'로 세팅한다
+      MYSQL_DATABASE: 'my_quiz_db'   # 8. 컴퓨터가 켜지자마자 'my_quiz_db'라는 데이터베이스 방을 만들어라
     ports:
-      - "3306:3306"
+      - "3306:3306"                  # 9. [맥북 포트 : 도커 내부 포트] 밖에서 3306으로 찌르면 내부 3306으로 연결해라
     volumes:
-      - db_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    networks:
-      - recipe_network
+      - mariadb_data:/var/lib/mysql  # 10. 데이터 보존창고 연결 (도커가 꺼져도 데이터가 지워지지 않게 하드디스크에 저장)
 
-  web:
-    build: .
-    container_name: recipe_flask
-    restart: always
+  # ----------------------------------------------------
+  # [두 번째 컴퓨터] 파이썬 플라스크 웹 서버
+  # ----------------------------------------------------
+  web:                               
+    build: .                         # 11. 현재 폴더('.')에 있는 'Dockerfile'을 읽어서 이 컴퓨터를 조립해라
+    container_name: recipe_flask     # 12. 이 컴퓨터의 이름은 'recipe_flask'로 부르겠다
+    restart: always                  # 13. 문제가 생겨서 꺼지면 자동으로 다시 켜라
     ports:
-      - "5000:80"  # Nginx가 80번 포트를 쓰므로 컨테이너의 80번을 호스트의 5000번으로 연결
+      - "5000:5000"                  # 14. 사용자가 인터넷 주소창에 5000번 포트로 들어오면 플라스크로 연결해라
     environment:
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=rootpassword
-      - DB_NAME=recipe_db
-    volumes:
-      - .:/app
+      - FLASK_ENV=development        # 15. 플라스크를 '개발 모드'로 켠다 (에러 메시지를 자세히 보여줌)
     depends_on:
-      - db
-    networks:
-      - recipe_network
+      - mariadb                      # 16. [★중요] 마리아DB 컴퓨터가 '먼저' 완전히 켜진 다음에 이 플라스크를 켜라
 
+# ----------------------------------------------------
+# [저장 공간 설정]
+# ----------------------------------------------------
 volumes:
-  db_data:
-
-networks:
-  recipe_network:
+  mariadb_data:                      # 17. 위에서 사용한 'mariadb_data'라는 안전한 저장 공간을 진짜로 생성해라
