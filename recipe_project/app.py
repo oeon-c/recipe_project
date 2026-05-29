@@ -9,13 +9,12 @@ CORS(app)
 def get_db_connection():
     return pymysql.connect(
         host='mariadb', 
-        user='user',
-        password='password',
+        user='root',
+        password='1234',
         db='recipe_db',
         charset='utf8'
     )
 
-conn = get_db_connection()
 
 #df0 = pd.read_csv("recipe_data.csv")
 
