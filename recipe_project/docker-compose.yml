@@ -23,7 +23,7 @@ services:
   # 2.파이썬 플라스크 웹 서버
 
   web:                               
-    build: ./flask                         # 11. 현재 폴더('.')에 있는 'Dockerfile'을 읽어서 이 컴퓨터를 조립해라
+    build: .                         # 11. 현재 폴더('.')에 있는 'Dockerfile'을 읽어서 이 컴퓨터를 조립해라
     container_name: recipe_flask     # 12. 이 컴퓨터의 이름은 'recipe_flask'로 부르겠다
     restart: always                  # 13. 문제가 생겨서 꺼지면 자동으로 다시 켜라
     ports:
