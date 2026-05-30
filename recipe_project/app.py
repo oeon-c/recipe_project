@@ -7,6 +7,7 @@ import time
 import re
 
 #local로 돌릴려면 컴터에 미리 docker를 깔고 docker compose up -d mariadb 쳐야함
+#리눅스에서는 docker compose up -d --build 치면 firefox로 웹 확인가능
 
 app = Flask(__name__)   #플라스크 앱 생성
 CORS(app)
