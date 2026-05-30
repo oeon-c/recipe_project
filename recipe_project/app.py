@@ -4,13 +4,18 @@ import pymysql
 import pandas as pd
 from sqlalchemy import create_engine, text
 import time
+import re
+
+#local로 돌릴려면 컴터에 미리 docker를 깔고 docker compose up -d mariadb 쳐야함
 
 app = Flask(__name__)   #플라스크 앱 생성
 CORS(app)
 
 def get_db_connection():
-    return pymysql.connect(
-        host='mariadb', 
+    return pymysql.connect(        #************중요************ 로컬/도커 마다 host 바꿔주기
+        #host='mariadb',    #도커에서 실행할 때
+        host='127.0.0.1',    #python에서 실행할 때
+        port=3307,
         user='root',
         password='1234',
         db='recipe_db',
@@ -19,20 +24,21 @@ def get_db_connection():
 
 def init_db():
     for i in range(5):
-        try:
-            engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')
+        try:                                                             #***********중요********** 로컬/도커마다 주소 바꿔주기
+            #engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')     #docker에서 돌릴 때 사용
+            engine = create_engine('mysql+pymysql://root:1234@127.0.0.1:3307/recipe_db')      #로컬에서 돌릴 때 사용
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
             break
         except:
-            print(f"DB 대기 중...({i+5}/5)")
+            print(f"DB 대기 중...({i}/5)")
             time.sleep(3)
 
     with engine.connect() as conn:
         try:
             count = conn.execute(text("SELECT COUNT(*) FROM recipe")).scalar()
             if count > 0:
-                printf("이미 데이터 있음 -스킵")
+                print("이미 데이터 있음 -스킵")
                 return engine
         except:
             pass
@@ -72,4 +78,4 @@ def select_ingredients():
     return render_template('recipe_ingredients.html', ingredients=ingredients_list)
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port = 5000, debug = True)
+  app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
