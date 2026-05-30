@@ -13,8 +13,8 @@ CORS(app)
 
 def get_db_connection():
     return pymysql.connect(        #************중요************ 로컬/도커 마다 host 바꿔주기
-        #host='mariadb',    #도커에서 실행할 때
-        host='127.0.0.1',    #python에서 실행할 때
+        host='mariadb',    #도커에서 실행할 때
+        #host='127.0.0.1',    #python에서 실행할 때
         port=3307,
         user='root',
         password='1234',
@@ -25,8 +25,8 @@ def get_db_connection():
 def init_db():
     for i in range(5):
         try:                                                             #***********중요********** 로컬/도커마다 주소 바꿔주기
-            #engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')     #docker에서 돌릴 때 사용
-            engine = create_engine('mysql+pymysql://root:1234@127.0.0.1:3307/recipe_db')      #로컬에서 돌릴 때 사용
+            engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')     #docker에서 돌릴 때 사용
+            #engine = create_engine('mysql+pymysql://root:1234@127.0.0.1:3307/recipe_db')      #로컬에서 돌릴 때 사용
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
             break
