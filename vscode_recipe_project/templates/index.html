@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>자취생 레시피</title>
+</head>
+<body>
+    <h1>자취생을 위한 레시피 추천</h1>
+    
+    <form action="/search" method="POST">
+        <input type="text" name="ingredient" placeholder="예: 김치, 계란, 두부">
+        <button type="submit">검색하기</button>
+    </form>
+
+    <br>
+    
+    {% if result_data %}
+        <p><strong>'{{ result_data }}'</strong>(으)로 만들 수 있는 레시피:</p>
+        
+        <ul>
+            {% for recipe_name in recipes %}
+                <li>{{ recipe_name }}</li>
+            {% else %}
+                <li>앗, 해당 재료가 들어간 레시피가 없어요!</li>
+            {% endfor %}
+        </ul>
+        
+    {% endif %}
+
+</body>
+</html>

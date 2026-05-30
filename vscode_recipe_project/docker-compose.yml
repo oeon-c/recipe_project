@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:latest
+    container_name: recipe_mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: recipe_db
+    ports:
+      - "3306:3306"
