@@ -60,7 +60,7 @@ engine = init_db()
 def index():
     return render_template('init.html')
 
-@app.route('/select-ingredients')
+@app.route('/select_ingredients')
 def select_ingredients():
     ingredients_set = set()
     with engine.connect() as connection:
