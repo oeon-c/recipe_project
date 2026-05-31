@@ -76,7 +76,7 @@ def select_ingredients():
                         ingredients_set.add(cleaned)
     ingredients_list = [{'id': idx, 'name': name} for idx, name in enumerate(sorted(list(ingredients_set)))]
 
-    return render_template('recipe_ingredients.html', ingredients=ingredients_list)
+    return render_template('select_ingredients.html', ingredients=ingredients_list)
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
