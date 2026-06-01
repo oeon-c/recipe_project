@@ -13,14 +13,14 @@ app = Flask(__name__)   #플라스크 앱 생성
 CORS(app)
 
 def get_db_connection():
-    return pymysql.connect(        #************중요************ 로컬/도커 마다 host 바꿔주기
-        host='mariadb',    #도커에서 실행할 때
-        #host='127.0.0.1',    #python에서 실행할 때
+    return pymysql.connect(
+        host='mariadb',
+        #host='127.0.0.1',
         port=3307,
         user='root',
         password='1234',
         database='recipe_db',
-        charset='utf8'
+        charset='utf8',  # 💡 쉼표(,) 추가 완료
         cursorclass=pymysql.cursors.DictCursor
     )
 
@@ -144,11 +144,10 @@ def recipe_list_page():
                     recipes_list.append({
                         'name': row.get('레시피명', '이름 없는 레시피'),
                         'ingredients': recipe_ingredients,
-                        # 💡 딕셔너리에 두 가지 조리도구 데이터를 각각 따로 바인딩합니다.
                         'basic_tools': row.get('기본 조리도구', '-'),
                         'extra_tools': row.get('추가 조리도구', '-'),
                         'category': row.get('식사/간식', '식사'),
-                        'link': row.get('リンク', '#') or row.get('링크', '#')
+                        'link': row.get('링크', '#') # 💡 오타 수정 완료
                     })
         conn.close()
     except Exception as e:
