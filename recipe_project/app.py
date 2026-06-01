@@ -78,5 +78,18 @@ def select_ingredients():
 
     return render_template('select_ingredients.html', ingredients=ingredients_list)
 
+@app.route('/search', methods=['POST'])
+def search_ingredient():
+    user_input = request.form.get('ingredient', '')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    sql = "SELECT DISTINCT recipe_name FROM recipes WHERE ingredients LIKE %s"
+    cursor.execute(sql, (f"%{user_input}%",))
+    result_rows = cursor.fetchall()
+    conn.close()
+
+    recommended_recipes = [row['recipe_name'] for row in result_rows]
+    return render_template('init.html', result_data=user_input, recipes=recommended_recipes)
+
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
