@@ -211,3 +211,57 @@
     color: #ff5722;
     border-radius: 12px;
 }
+
+/* ==========================================
+   레시피 결과 표 (Table) 및 스크롤 제어 서식
+   ========================================== */
+
+.recipe-table-container {
+    max-height: 400px;         /* 💡 표 상자의 최대 높이 제한 */
+    overflow-y: auto;          /* 💡 데이터 분량이 상자보다 많아지면 스크롤 자동 활성화 */
+    width: 90%;
+    max-width: 900px;
+    margin: 0 auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.recipe-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    background-color: #ffffff;
+}
+
+/* 스크롤 시에도 표 헤더가 상단에 고정되도록 설정 */
+.recipe-table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #ff5722;
+    color: white;
+    padding: 12px 10px;
+    font-size: 15px;
+    z-index: 1;
+}
+
+.recipe-table tbody td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+/* 테이블 행에 마우스를 올렸을 때 하이라이트 효과 */
+.recipe-table tbody tr:hover {
+    background-color: #fdf5f2;
+}
+
+/* 레시피 식사/간식 태그 배지 */
+.recipe-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 12px;
+}
