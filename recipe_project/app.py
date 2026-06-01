@@ -91,8 +91,8 @@ def search_ingredient():
     recommended_recipes = [row['recipe_name'] for row in result_rows]
     return render_template('init.html', result_data=user_input, recipes=recommended_recipes)
 
-@app.route('/select_ingredients')
-def select_ingredients():
+@app.route('/recipe_list')
+def recipe_list():
     ingredients_list = []
     recipes_list = []
     try:
@@ -131,7 +131,7 @@ def select_ingredients():
         ingredients_list = []
         recipes_list = []
 
-    return render_template('select_ingredients.html', ingredients=ingredients_list, all_recipes=recipes_list)
+    return render_template('recipe_list.html', ingredients=ingredients_list, all_recipes=recipes_list)
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
