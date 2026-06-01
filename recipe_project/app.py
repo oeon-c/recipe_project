@@ -91,33 +91,47 @@ def search_ingredient():
     recommended_recipes = [row['recipe_name'] for row in result_rows]
     return render_template('init.html', result_data=user_input, recipes=recommended_recipes)
 
-@app.route('/recipe_list')
-def recipe_list_page():
+@app.route('/select_ingredients')
+def select_ingredients():
+    ingredients_list = []
+    recipes_list = []
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 지정하신 열 이름에 맞춰 SQL 쿼리 실행
-        cursor.execute("SELECT 레시피명, `식사/간식` FROM recipes") 
+        # 1. 전체 재료 목록 가져오기
+        cursor.execute("SELECT DISTINCT 재료 FROM recipes")
         result_rows = cursor.fetchall()
+        ingredients_set = set()
+        for row in result_rows:
+            if row.get('재료'):
+                for item in row['재료'].split(','):
+                    cleaned = item.strip()
+                    if cleaned:
+                        ingredients_set.add(cleaned)
+        ingredients_list = [{'id': idx, 'name': name} for idx, name in enumerate(sorted(list(ingredients_set)))]
         
-        # 오직 DB에서 가져온 데이터로만 리스트 생성
+        # 2. 💡 실시간 필터링을 위한 전체 레시피 명단과 세부 열 정보 가져오기
+        cursor.execute("SELECT 레시피명, 재료, 조리도구, `식사/간식`, 링크 FROM recipes")
+        all_recipes = cursor.fetchall()
         recipes_list = [
             {
-                'name': row['레시피명'], 
-                'category': row.get('식사/간식', '식사')
-            } 
-            for row in result_rows
+                'name': row['레시피명'],
+                'ingredients': row['재료'],
+                'tools': row.get('조리도구', '-'),
+                'category': row.get('식사/간식', '식사'),
+                'link': row.get('링크', '#')
+            }
+            for row in all_recipes
         ]
         conn.close()
-        
-        return render_template('recipe_list.html', recipes=recipes_list)
-
     except Exception as e:
-        # 에러 발생 시 더미 데이터를 주지 않고 터미널에 에러 로그만 찍음
-        print(f"❌ 데이터베이스 연동 실패 에러: {e}")
-        # 빈 리스트를 넘겨주어 화면에 '등록된 레시피가 없습니다'를 출력하게 함
-        return render_template('recipe_list.html', recipes=[])
+        print(f"DB Error: {e}")
+        # 예외 처리 발생 시 빈 값 반환
+        ingredients_list = []
+        recipes_list = []
+
+    return render_template('select_ingredients.html', ingredients=ingredients_list, all_recipes=recipes_list)
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
