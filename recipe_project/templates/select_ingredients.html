@@ -15,10 +15,8 @@
 
     <div class="selected-section">
         <h3 class="section-title">선택된 재료</h3>
-        <div class="selected-container">
-            <span class="text-box selected-badge">양파 <b style="color:#ff5722; margin-left: 5px;">X</b></span>
-            <span class="text-box selected-badge">계란 <b style="color: #ff5722; margin-left: 5px;">X</b></span>
-        </div>
+        <div id="selected-container" class="selected-container">
+            </div>
     </div>
 
     <div class="ingredients-list-section">
@@ -28,7 +26,7 @@
                 {% if ingredients %}
                     {% for ingredient in ingredients %}
                     <label class="ingredient-item" data-name="{{ ingredient.name }}">
-                        <input type="checkbox" name="ingredients" value="{{ ingredient.name }}">
+                        <input type="checkbox" class="ingredient-checkbox" name="ingredients" value="{{ ingredient.name }}">
                         <span class="ingredient-name">{{ ingredient.name }}</span>
                     </label>
                     {% endfor %}
@@ -51,32 +49,60 @@
     <script>
         const searchInput = document.getElementById('search-input');
         const ingredientItems = document.querySelectorAll('.ingredient-item');
+        const checkboxes = document.querySelectorAll('.ingredient-checkbox');
+        const selectedContainer = document.getElementById('selected-container');
 
+        // 💡 1. 선택된 재료 화면을 실시간으로 업데이트하는 함수
+        function updateSelectedBadges() {
+            // 기존에 생성되어 있던 배지들을 깨끗하게 비웁니다
+            selectedContainer.innerHTML = '';
+
+            // 체크박스가 켜진 아이템들을 전부 모아서 배지를 만듭니다
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const name = checkbox.value;
+
+                    // 배지 엘리먼트 생성
+                    const badge = document.createElement('span');
+                    badge.className = 'text-box selected-badge';
+                    badge.innerHTML = `${name} <b style="color:#ff5722; margin-left: 5px; cursor: pointer;">X</b>`;
+
+                    // 배지의 X 버튼을 누르면 선택이 취소되는 이벤트 바인딩
+                    badge.querySelector('b').addEventListener('click', () => {
+                        checkbox.checked = false; // 아래 체크박스 해제
+                        updateSelectedBadges();   // 상단 배지 영역 갱신
+                    });
+
+                    selectedContainer.appendChild(badge);
+                }
+            });
+        }
+
+        // 💡 2. 전체 목록에서 체크박스를 누를 때마다 배지 동기화
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedBadges);
+        });
+
+        // 💡 3. 기존 검색 및 스크롤 기능 유지
         searchInput.addEventListener('keypress', function(e) {
-            // 사용자가 엔터키를 눌렀을 때 실행
             if (e.key === 'Enter') {
                 const keyword = this.value.trim();
                 if (!keyword) return;
 
                 let foundItem = null;
 
-                // 전체 리스트를 돌며 정확히 일치하거나 해당 단어를 포함하는 항목 탐색
                 for (let item of ingredientItems) {
                     const ingredientName = item.getAttribute('data-name');
                     if (ingredientName.includes(keyword)) {
                         foundItem = item;
-                        break; // 가장 먼저 발견된 아이템 지정 후 탈출
+                        break;
                     }
                 }
 
                 if (foundItem) {
-                    // 1. 재료가 존재하면 알림창 표시
                     alert(`'${keyword}' 재료를 찾았습니다! 해당 위치로 이동합니다.`);
-                    
-                    // 2. 해당 재료 항목이 스크롤 박스 안에서 부드럽게 보이도록 스크롤 이동
                     foundItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     
-                    // 3. 시각적으로 강조하기 위해 배경색을 잠깐 깜빡이게 유도 (선택사항)
                     foundItem.style.borderColor = '#ff5722';
                     foundItem.style.backgroundColor = '#fff9f6';
                     setTimeout(() => {
@@ -84,7 +110,6 @@
                         foundItem.style.backgroundColor = 'white';
                     }, 1500);
                 } else {
-                    // 재료가 존재하지 않을 때 알림창 표시
                     alert(`'${keyword}'은(는) 전체 목록에 등록되어 있지 않은 재료입니다.`);
                 }
             }
