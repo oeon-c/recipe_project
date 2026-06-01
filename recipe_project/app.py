@@ -91,5 +91,33 @@ def search_ingredient():
     recommended_recipes = [row['recipe_name'] for row in result_rows]
     return render_template('init.html', result_data=user_input, recipes=recommended_recipes)
 
+@app.route('/recipe_list')
+def recipe_list_page():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 지정하신 열 이름에 맞춰 SQL 쿼리 실행
+        cursor.execute("SELECT 레시피명, `식사/간식` FROM recipes") 
+        result_rows = cursor.fetchall()
+        
+        # 오직 DB에서 가져온 데이터로만 리스트 생성
+        recipes_list = [
+            {
+                'name': row['레시피명'], 
+                'category': row.get('식사/간식', '식사')
+            } 
+            for row in result_rows
+        ]
+        conn.close()
+        
+        return render_template('recipe_list.html', recipes=recipes_list)
+
+    except Exception as e:
+        # 에러 발생 시 더미 데이터를 주지 않고 터미널에 에러 로그만 찍음
+        print(f"❌ 데이터베이스 연동 실패 에러: {e}")
+        # 빈 리스트를 넘겨주어 화면에 '등록된 레시피가 없습니다'를 출력하게 함
+        return render_template('recipe_list.html', recipes=[])
+
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
