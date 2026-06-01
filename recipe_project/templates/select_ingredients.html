@@ -45,88 +45,63 @@
         </div>
     </form>
 
-    <script>
-        const searchInput = document.getElementById('search-input');
-        const ingredientItems = document.querySelectorAll('.ingredient-item');
-        const checkboxes = document.querySelectorAll('.ingredient-checkbox');
-        const selectedContainer = document.getElementById('selected-container');
-        // 💡 1. href="/recipe_list" 속성을 가진 추천 레시피 찾기 버튼(a 태그)을 가져옵니다.
-        const submitButton = document.querySelector('a[href="/recipe_list"]');
+<script>
+    const searchInput = document.getElementById('search-input');
+    const ingredientItems = document.querySelectorAll('.ingredient-item');
+    const checkboxes = document.querySelectorAll('.ingredient-checkbox');
+    const selectedContainer = document.getElementById('selected-container');
 
-        function updateSelectedBadges() {
-            selectedContainer.innerHTML = '';
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    const name = checkbox.value;
-                    const badge = document.createElement('span');
-                    badge.className = 'text-box selected-badge';
-                    badge.innerHTML = `${name} <b style="color:#ff5722; margin-left: 5px; cursor: pointer;">X</b>`;
-
-                    badge.querySelector('b').addEventListener('click', () => {
-                        checkbox.checked = false;
-                        updateSelectedBadges();
-                    });
-                    selectedContainer.appendChild(badge);
-                }
-            });
-        }
-
+    // 1. 선택된 재료 배지 실시간 업데이트 함수
+    function updateSelectedBadges() {
+        selectedContainer.innerHTML = '';
         checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', updateSelectedBadges);
-        });
+            if (checkbox.checked) {
+                const name = checkbox.value;
+                const badge = document.createElement('span');
+                badge.className = 'text-box selected-badge';
+                badge.innerHTML = `${name} <b style="color:#ff5722; margin-left: 5px; cursor: pointer;">X</b>`;
 
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault(); // 엔터 입력 시 폼이 바로 전송되는 현상 방지
-                const keyword = this.value.trim();
-                if (!keyword) return;
-                let foundItem = null;
-                for (let item of ingredientItems) {
-                    const ingredientName = item.getAttribute('data-name');
-                    if (ingredientName.includes(keyword)) {
-                        foundItem = item;
-                        break;
-                    }
-                }
-                if (foundItem) {
-                    alert(`'${keyword}' 재료를 찾았습니다! 해당 위치로 이동합니다.`);
-                    foundItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    foundItem.style.borderColor = '#ff5722';
-                    foundItem.style.backgroundColor = '#fff9f6';
-                    setTimeout(() => {
-                        foundItem.style.borderColor = '#ddd';
-                        foundItem.style.backgroundColor = 'white';
-                    }, 1500);
-                } else {
-                    alert(`'${keyword}'은(는) 전체 목록에 등록되어 있지 않은 재료입니다.`);
-                }
+                badge.querySelector('b').addEventListener('click', () => {
+                    checkbox.checked = false;
+                    updateSelectedBadges();
+                });
+                selectedContainer.appendChild(badge);
             }
         });
+    }
 
-        // 💡 2. [새로 추가된 로직] 버튼을 누르면 선택한 재료들을 주소창 데이터(Query String)로 조립하여 이동시킵니다.
-        if (submitButton) {
-            submitButton.addEventListener('click', function(e) {
-                e.preventDefault(); // 기본 링크 이동 동작을 중단합니다.
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedBadges);
+    });
 
-                const checkedIngredients = [];
-                checkboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                    // 체크된 재료의 명칭을 안전하게 인코딩하여 수집합니다.
-                        checkedIngredients.push('ingredients=' + encodeURIComponent(checkbox.value));
-                    }
-                });
-
-                let targetUrl = '/recipe_list';
-            
-                // 선택한 재료가 있다면 주소 뒤에 ?ingredients=양파&ingredients=계란 형태로 결합합니다.
-                if (checkedIngredients.length > 0) {
-                    targetUrl += '?' + checkedIngredients.join('&');
+    // 2. 재료 검색 및 스크롤 이동 기능
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // 💡 중요: 검색창에서 엔터를 쳤을 때 form이 바로 전송되는 현상을 막아줍니다.
+            const keyword = this.value.trim();
+            if (!keyword) return;
+            let foundItem = null;
+            for (let item of ingredientItems) {
+                const ingredientName = item.getAttribute('data-name');
+                if (ingredientName.includes(keyword)) {
+                    foundItem = item;
+                    break;
                 }
-
-                // 재료 정보를 담은 완성된 주소로 화면을 강제 전환합니다.
-                window.location.href = targetUrl;
-            });
+            }
+            if (foundItem) {
+                alert(`'${keyword}' 재료를 찾았습니다! 해당 위치로 이동합니다.`);
+                foundItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                foundItem.style.borderColor = '#ff5722';
+                foundItem.style.backgroundColor = '#fff9f6';
+                setTimeout(() => {
+                    foundItem.style.borderColor = '#ddd';
+                    foundItem.style.backgroundColor = 'white';
+                }, 1500);
+            } else {
+                alert(`'${keyword}'은(는) 전체 목록에 등록되어 있지 않은 재료입니다.`);
+            }
         }
-    </script>
+    });
+</script>
 </body>
 </html>
