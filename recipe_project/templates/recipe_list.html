@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>추천 レ시피 목록</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1 style="text-align: center;">추천 레시피 보기</h1>
 
+    <div class="category-section">
+        <label class="category-label">
+            <input type="checkbox" class="category-filter" value="식사" checked>
+            <span>식사류 보기</span>
+        </label>
+        <label class="category-label">
+            <input type="checkbox" class="category-filter" value="간식" checked>
+            <span>간식류 보기</span>
+        </label>
+    </div>
+
+    <div class="recipe-grid-container">
+        <div class="recipe-grid">
+            {% if recipes %}
+                {% for recipe in recipes %}
+                <div class="recipe-item" data-category="{{ recipe.category }}">
+                    <span class="recipe-title">{{ recipe.name }}</span>
+                    <span class="recipe-badge">{{ recipe.category }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">추천 결과 조건에 부합하는 레시피가 없습니다.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="box-container-center" style="margin-top: 50px">
+        <a href="/select_ingredients" style="text-decoration: none;">
+            <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">이전으로 (재료 선택)</span>
+        </a>
+        <a href="/" style="text-decoration: none;">
+            <span class="text-box" style="background-color: #ff5722; color: white;">처음으로 돌아가기</span>
+        </a>
+    </div>
+
+    <script>
+        const categoryFilters = document.querySelectorAll('.category-filter');
+        const recipeItems = document.querySelectorAll('.recipe-item');
+
+        function filterRecipes() {
+            const activeCategories = Array.from(categoryFilters)
+                                          .filter(cb => cb.checked)
+                                          .map(cb => cb.value);
+
+            recipeItems.forEach(item => {
+                const itemCategory = item.getAttribute('data-category');
+                
+                if (activeCategories.includes(itemCategory)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        categoryFilters.forEach(filter => {
+            filter.addEventListener('change', filterRecipes);
+        });
+
+        filterRecipes();
+    </script>
+</body>
+</html>
