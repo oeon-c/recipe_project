@@ -21,6 +21,7 @@ def get_db_connection():
         password='1234',
         database='recipe_db',
         charset='utf8'
+        cursorclass=pymysql.cursors.DictCursor
     )
 
 def init_db():
@@ -46,10 +47,21 @@ def init_db():
 
 
     df0 = pd.read_csv("recipe_data.csv")
-    df = df0.drop(axis=1,labels=["링크", "기본 조리도구", "추가 조리도구"], inplace=False)
+    # 1. '링크'는 화면에서 사용하므로 삭제 목록에서 제외합니다.
+    # 2. '기본 조리도구' 열 이름을 하단 쿼리에서 사용하는 '조리도구'로 변경합니다.
+    if "기본 조리도구" in df0.columns:
+        df0.rename(columns={"기본 조리도구": "조리도구"}, inplace=True)
+        
+    # 3. 이제 불필요한 '추가 조리도구'만 삭제합니다. (링크와 조리도구는 살려둡니다)
+    df = df0.drop(axis=1, labels=["추가 조리도구"], inplace=False, errors='ignore')
+    
+    # 모든 값이 NaN인 열 제거
     df.dropna(axis=1, how='all', inplace=True)
-    df.drop(axis=0, labels=74, inplace=True)        #마지막행 NaN 지우기 
+    
+    # 마지막 행 NaN 지우기 (안전하게 레시피명이 없는 행을 지우도록 예외처리 보완)
+    df = df.dropna(subset=['레시피명'])
 
+    # 데이터베이스에 저장
     df.to_sql(name='recipe', con=engine, if_exists='append', index=False)
     return engine
 
