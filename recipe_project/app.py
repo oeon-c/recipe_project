@@ -25,44 +25,47 @@ def get_db_connection():
     )
 
 def init_db():
+    engine = None
+    db_url = 'mysql+pymysql://root:1234@mariadb:3306/recipe_db'
+
     for i in range(5):
-        try:                                                             #***********중요********** 로컬/도커마다 주소 바꿔주기
-            engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')     #docker에서 돌릴 때 사용
-            #engine = create_engine('mysql+pymysql://root:1234@127.0.0.1:3307/recipe_db')      #로컬에서 돌릴 때 사용
+        try:
+            engine = create_engine(db_url)
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
+            print("✅ 데이터베이스 엔진 연결 성공!")
             break
-        except:
-            print(f"DB 대기 중...({i}/5)")
+        except Exception as conn_err:
+            print(f"DB 대기 중...({i+1}/5) 원인: {conn_err}")
             time.sleep(3)
 
-    with engine.connect() as conn:
-        try:
+    if engine is None:
+        print("❌ DB 연결에 최종 실패했습니다.")
+        return None
+
+    try:
+        with engine.connect() as conn:
             count = conn.execute(text("SELECT COUNT(*) FROM recipe")).scalar()
             if count > 0:
-                print("이미 데이터 있음 -스킵")
+                print("이미 데이터 있음 - 스킵")
                 return engine
-        except:
-            pass
+    except Exception as table_err:
+        print(f"테이블 체크 중 참고사항: {table_err}")
 
-
-    df0 = pd.read_csv("recipe_data.csv")
-    # 1. '링크'는 화면에서 사용하므로 삭제 목록에서 제외합니다.
-    # 2. '기본 조리도구' 열 이름을 하단 쿼리에서 사용하는 '조리도구'로 변경합니다.
-    if "기본 조리도구" in df0.columns:
-        df0.rename(columns={"기본 조리도구": "조리도구"}, inplace=True)
+    try:
+        df0 = pd.read_csv("recipe_data.csv")
         
-    # 3. 이제 불필요한 '추가 조리도구'만 삭제합니다. (링크와 조리도구는 살려둡니다)
-    df = df0.drop(axis=1, labels=["추가 조리도구"], inplace=False, errors='ignore')
-    
-    # 모든 값이 NaN인 열 제거
-    df.dropna(axis=1, how='all', inplace=True)
-    
-    # 마지막 행 NaN 지우기 (안전하게 레시피명이 없는 행을 지우도록 예외처리 보완)
-    df = df.dropna(subset=['레시피명'])
+        # 💡 지우거나 이름을 바꾸지 않고 불필요한 행 정돈 및 전체 열 유지
+        df = df0.dropna(axis=1, how='all', inplace=False)
+        df = df.dropna(subset=['레시피명'])
 
-    # 데이터베이스에 저장
-    df.to_sql(name='recipe', con=engine, if_exists='append', index=False)
+        # 테이블을 새로 생성하면서 데이터 적재
+        df.to_sql(name='recipe', con=engine, if_exists='replace', index=False)
+        print("✅ 원본 열 구조 그대로 recipe 테이블 적재 완료!")
+        
+    except Exception as data_err:
+        print(f"❌ CSV 데이터 가공 및 적재 중 에러 발생: {data_err}")
+        
     return engine
 
 engine = init_db()
@@ -115,22 +118,19 @@ def select_ingredients():
 def recipe_list_page():
     recipes_list = []
     try:
-        # 💡 HTML 주소창 뒤에 붙어온 선택 재료 리스트를 파이썬 리스트로 안전하게 수집합니다.
         selected_ingredients = request.args.getlist('ingredients')
         
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 전체 레시피 명단과 세부 정보 조회 (단수형 테이블 recipe 반영 완료)
-        cursor.execute("SELECT 레시피명, 재료, 조리도구, `식사/간식`, 링크 FROM recipe")
+        # 💡 SQL 쿼리에서 '기본 조리도구'와 '추가 조리도구' 열을 각각 정확히 조회합니다.
+        cursor.execute("SELECT 레시피명, 재료, `기본 조리도구`, `추가 조리도구`, `식사/간식`, 링크 FROM recipe")
         all_recipes = cursor.fetchall()
         
         for row in all_recipes:
             if row:
                 recipe_ingredients = row.get('재료', '')
                 
-                # 사용자가 재료를 하나도 선택하지 않은 상태로 넘어왔다면 조건 없이 전체 출력 처리,
-                # 재료를 골랐다면 그 중 하나라도 포함된 요리만 매핑 처리
                 is_matched = False
                 if len(selected_ingredients) == 0:
                     is_matched = True
@@ -144,16 +144,17 @@ def recipe_list_page():
                     recipes_list.append({
                         'name': row.get('레시피명', '이름 없는 레시피'),
                         'ingredients': recipe_ingredients,
-                        'tools': row.get('조리도구', '-'),
+                        # 💡 딕셔너리에 두 가지 조리도구 데이터를 각각 따로 바인딩합니다.
+                        'basic_tools': row.get('기본 조리도구', '-'),
+                        'extra_tools': row.get('추가 조리도구', '-'),
                         'category': row.get('식사/간식', '식사'),
-                        'link': row.get('링크', '#')
+                        'link': row.get('リンク', '#') or row.get('링크', '#')
                     })
         conn.close()
     except Exception as e:
         print(f"❌ 레시피 목록 로드 중 진짜 에러 발생: {e}")
         recipes_list = []
 
-    # 최종 필터링 완료된 명단을 결과 페이지(recipe_list.html)로 전달합니다.
     return render_template('recipe_list.html', recipes=recipes_list)
 
 if __name__ == '__main__':
