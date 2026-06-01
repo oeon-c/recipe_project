@@ -19,7 +19,7 @@ def get_db_connection():
         port=3307,
         user='root',
         password='1234',
-        db='recipe_db',
+        database='recipe_db',
         charset='utf8'
     )
 
