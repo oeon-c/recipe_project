@@ -22,25 +22,27 @@
 
     <div class="ingredients-list-section">
         <h3 class="section-title">전체 재료 목록</h3>
-        <div class="ingredients-grid">
-            {% if ingredients %}
-                {% for ingredient in ingredients %}
-                <label class="ingredient-item">
-                    <input type="checkbox" name="ingredients" value="{{ ingredient.name }}">
-                    <span class="ingredient-name">{{ ingredient.name }}</span>
-                </label>
-                {% endfor %}
-            {% else %}
-                <p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">등록된 재료가 없습니다.</p>
-            {% endif %}
-        </div>
+        <div class="ingredients-list-section">
+		<div class="ingredients-grid">
+            	{% if ingredients %}
+                	{% for ingredient in ingredients %}
+                	<label class="ingredient-item">
+                    	<input type="checkbox" name="ingredients" value="{{ ingredient.name }}">
+                    	<span class="ingredient-name">{{ ingredient.name }}</span>
+                	</label>
+                	{% endfor %}
+            	{% else %}
+                	<p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">등록된 재료가 없습니다.</p>
+            	{% endif %}
+        	</div>
+	</div>
     </div>
 
     <div class="box-container-center" style="margin-top: 50px">
         <a href="/" style="text-decoration: none;">
             <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">이전으로</span>
         </a>
-        <a href="/recipe-list" style="text-decoration: none;">
+        <a href="/recipe_list" style="text-decoration: none;">
             <span class="text-box" style="background-color: #ff5722; color: white;">추천 레시피 찾기</span>
         </a>
     </div>

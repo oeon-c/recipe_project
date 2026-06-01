@@ -116,3 +116,21 @@
     font-size: 15px;
     color: #333;
 }
+
+
+/* 전체 재료 목록을 감싸는 컨테이너 박스 */
+.ingredients-grid-container {
+    max-height: 400px;         /* 💡 원하는 상자 높이를 지정 (예: 400px) */
+    overflow-y: auto;          /* 💡 내용이 상자보다 길어지면 수직 스크롤바 생성 */
+    border: 1px solid #ddd;    /* 박스 테두리선 선용 (선택) */
+    border-radius: 8px;        /* 테두리 둥글게 (선택) */
+    padding: 15px;             /* 박스 내부 여백 */
+    background-color: #f9f9f9; /* 박스 배경색 (선택) */
+}
+
+/* 기존 그리드 구조는 유지 */
+.ingredients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1-fraction)); /* 반응형 격자 */
+    gap: 10px;
+}
