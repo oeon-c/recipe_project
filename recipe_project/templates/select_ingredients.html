@@ -10,41 +10,40 @@
     <h1 style="text-align: center;">갖고 있는 재료 선택하기</h1>
 
     <div class="search-section">
-        <input type="text" id="search-input" class="search-bar" placeholder="필요한 재료를 검색해 보세요! (엔터 또는 입력)">
+        <input type="text" id="search-input" class="search-bar" placeholder="필요한 재료를 검색해 보세요! (엔터)">
     </div>
 
     <div class="selected-section">
         <h3 class="section-title">선택된 재료</h3>
-        <div id="selected-container" class="selected-container">
-            </div>
+        <div id="selected-container" class="selected-container"></div>
     </div>
 
-    <div class="ingredients-list-section">
-        <h3 class="section-title">전체 재료 목록</h3>
-        <div class="ingredients-grid-container">
-            <div class="ingredients-grid">
-                {% if ingredients %}
-                    {% for ingredient in ingredients %}
-                    <label class="ingredient-item" data-name="{{ ingredient.name }}">
-                        <input type="checkbox" class="ingredient-checkbox" name="ingredients" value="{{ ingredient.name }}">
-                        <span class="ingredient-name">{{ ingredient.name }}</span>
-                    </label>
-                    {% endfor %}
-                {% else %}
-                    <p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">등록된 재료가 없습니다.</p>
-                {% endif %}
+    <form action="/recipe_list" method="GET">
+        <div class="ingredients-list-section">
+            <h3 class="section-title">전체 재료 목록</h3>
+            <div class="ingredients-grid-container">
+                <div class="ingredients-grid">
+                    {% if ingredients %}
+                        {% for ingredient in ingredients %}
+                        <label class="ingredient-item" data-name="{{ ingredient.name }}">
+                            <input type="checkbox" class="ingredient-checkbox" name="ingredients" value="{{ ingredient.name }}">
+                            <span class="ingredient-name">{{ ingredient.name }}</span>
+                        </label>
+                        {% endfor %}
+                    {% else %}
+                        <p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">등록된 재료가 없습니다.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="box-container-center" style="margin-top: 50px">
-        <a href="/" style="text-decoration: none;">
-            <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">이전으로</span>
-        </a>
-        <a href="/recipe_list" style="text-decoration: none;">
-            <span class="text-box" style="background-color: #ff5722; color: white;">추천 레시피 찾기</span>
-        </a>
-    </div>
+        <div class="box-container-center" style="margin-top: 50px">
+            <a href="/" style="text-decoration: none;">
+                <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">이전으로</span>
+            </a>
+            <button type="submit" class="text-box" style="background-color: #ff5722; color: white; border: none; cursor: pointer; font-size: 16px;">추천 레시피 찾기</button>
+        </div>
+    </form>
 
     <script>
         const searchInput = document.getElementById('search-input');
@@ -52,45 +51,34 @@
         const checkboxes = document.querySelectorAll('.ingredient-checkbox');
         const selectedContainer = document.getElementById('selected-container');
 
-        // 💡 1. 선택된 재료 화면을 실시간으로 업데이트하는 함수
         function updateSelectedBadges() {
-            // 기존에 생성되어 있던 배지들을 깨끗하게 비웁니다
             selectedContainer.innerHTML = '';
-
-            // 체크박스가 켜진 아이템들을 전부 모아서 배지를 만듭니다
             checkboxes.forEach(checkbox => {
                 if (checkbox.checked) {
                     const name = checkbox.value;
-
-                    // 배지 엘리먼트 생성
                     const badge = document.createElement('span');
                     badge.className = 'text-box selected-badge';
                     badge.innerHTML = `${name} <b style="color:#ff5722; margin-left: 5px; cursor: pointer;">X</b>`;
 
-                    // 배지의 X 버튼을 누르면 선택이 취소되는 이벤트 바인딩
                     badge.querySelector('b').addEventListener('click', () => {
-                        checkbox.checked = false; // 아래 체크박스 해제
-                        updateSelectedBadges();   // 상단 배지 영역 갱신
+                        checkbox.checked = false;
+                        updateSelectedBadges();
                     });
-
                     selectedContainer.appendChild(badge);
                 }
             });
         }
 
-        // 💡 2. 전체 목록에서 체크박스를 누를 때마다 배지 동기화
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', updateSelectedBadges);
         });
 
-        // 💡 3. 기존 검색 및 스크롤 기능 유지
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                e.preventDefault(); // 엔터 입력 시 폼이 바로 전송되는 현상 방지
                 const keyword = this.value.trim();
                 if (!keyword) return;
-
                 let foundItem = null;
-
                 for (let item of ingredientItems) {
                     const ingredientName = item.getAttribute('data-name');
                     if (ingredientName.includes(keyword)) {
@@ -98,11 +86,9 @@
                         break;
                     }
                 }
-
                 if (foundItem) {
                     alert(`'${keyword}' 재료를 찾았습니다! 해당 위치로 이동합니다.`);
                     foundItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
                     foundItem.style.borderColor = '#ff5722';
                     foundItem.style.backgroundColor = '#fff9f6';
                     setTimeout(() => {
