@@ -37,8 +37,12 @@
             <tr>
                 <th>레시피명</th>
                 <th>구분</th>
-                <th>필요 재료</th>
-                <th>기본 조리도구</th> <th>추가 조리도구</th> <th>바로가기</th>
+                <th>재료</th>
+                <th>조리도구</th>
+                <th>기본 조리도구</th>
+                <th>추가 조리도구</th>
+                <th>레시피 내용</th>
+                <th>링크</th>
             </tr>
         </thead>
         <tbody id="recipe-table-body">
@@ -46,17 +50,31 @@
                 {% for recipe in recipes %}
                 <tr class="recipe-row" data-category="{{ recipe.category }}" data-name="{{ recipe.name }}">
                     <td style="font-weight: bold; color: #333;">{{ recipe.name }}</td>
-                    <td><span class="recipe-badge" style="background-color: {{ '#ffe0b2' if recipe.category == '식사' else '#e1f5fe' }}; color: {{ '#ff5722' if recipe.category == '식사' else '#0288d1' }};">{{ recipe.category }}</span></td>
+                    <td>
+                        <span class="recipe-badge" style="background-color: {{ '#ffe0b2' if recipe.category == '식사' else '#e1f5fe' }}; color: {{ '#ff5722' if recipe.category == '식사' else '#0288d1' }};">
+                            {{ recipe.category }}
+                        </span>
+                    </td>
                     <td style="font-size: 13px; text-align: left;">{{ recipe.ingredients }}</td>
-                    <td>{{ recipe.basic_tools }}</td> <td>{{ recipe.extra_tools }}</td> <td><a href="{{ recipe.link }}" target="_blank" style="color: #ff5722; text-decoration: none; font-weight: bold;">보기</a></td>
+                    <td>{{ recipe.tool }}</td>
+                    <td>{{ recipe.basic_tools }}</td>
+                    <td>{{ recipe.extra_tools }}</td>
+                    <td style="font-size: 12px; text-align: left; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ recipe.recipe_desc }}">
+                        {{ recipe.recipe_desc }}
+                    </td>
+                    <td>
+                        <a href="{{ recipe.link }}" target="_blank" style="color: #ff5722; text-decoration: none; font-weight: bold;">보기</a>
+                    </td>
                 </tr>
                 {% endfor %}
             {% else %}
-                <tr id="no-result-row"><td colspan="6" style="color: #999; padding: 30px;">선택한 재료에 부합하는 추천 레시피 결과가 존재하지 않습니다.</td></tr>
+                <tr id="no-result-row">
+                    <td colspan="8" style="color: #999; padding: 30px;">선택한 재료에 부합하는 추천 레시피 결과가 존재하지 않습니다.</td>
+                </tr>
             {% endif %}
         </tbody>
     </table>
-</div>
+    </div>
 
     <div class="box-container-center" style="margin-top: 50px">
         <a href="/select_ingredients" style="text-decoration: none;">
