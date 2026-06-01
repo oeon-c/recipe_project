@@ -119,50 +119,44 @@ def recipe_list_page():
     recipes_list = []
     selected_ingredients = []
     try:
-        # GET 요청으로 넘어온 선택 재료 리스트 수집
         selected_ingredients = request.args.getlist('ingredients')
         
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        cursor.execute("SELECT 레시피명, 재료, `기본 조리도구`, `추가 조리도구`, `식사/간식`, 링크 FROM recipe")
+        cursor.execute("SELECT * FROM recipe")
         all_recipes = cursor.fetchall()
         
         for row in all_recipes:
             if row:
-                # DB의 값이 NULL(None)일 경우 파이썬 에러를 막기 위해 'or' 구문으로 빈 문자열 대체
-                recipe_ingredients = row.get('재료') or ''
+                recipe_ingredients = str(row.get('재료', '')) if row.get('재료') else ''
                 
                 is_matched = False
                 if len(selected_ingredients) == 0:
                     is_matched = True
                 else:
                     for ing in selected_ingredients:
-                        # 재료가 포함되어 있는지 검사
                         if ing in recipe_ingredients:
                             is_matched = True
                             break
                             
                 if is_matched:
                     recipes_list.append({
-                        'name': row.get('레시피명') or '이름 없는 레시피',
+                        'name': row.get('레시피명') or '-',
                         'ingredients': recipe_ingredients,
-                        'basic_tools': row.get('기본 조리도구') or '-',
-                        'extra_tools': row.get('추가 조리도구') or '-',
+                        'tool': row.get('조리도구') or '-',
+                        'recipe_desc': row.get('레시피') or '-',
                         'category': row.get('식사/간식') or '식사',
-                        'link': row.get('링크') or '#'
+                        'link': row.get('링크') or '#',
+                        'basic_tools': row.get('기본 조리도구') or '-',
+                        'extra_tools': row.get('추가 조리도구') or '-'
                     })
         conn.close()
-        
-        # 터미널 디버깅용 로그
-        print(f"=== [디버깅] 선택된 재료 수신: {selected_ingredients} ===")
-        print(f"=== [디버깅] 매칭된 레시피 갯수: {len(recipes_list)} ===")
 
     except Exception as e:
-        print(f"❌ 레시피 목록 로드 중 진짜 에러 발생: {e}")
+        print(f"레시피 목록 로드 중 에러 발생: {e}")
         recipes_list = []
 
-    # HTML 템플릿으로 레시피 목록과 사용자가 선택한 재료 목록을 함께 전달합니다.
     return render_template('recipe_list.html', recipes=recipes_list, selected_ingredients=selected_ingredients)
 
 if __name__ == '__main__':
