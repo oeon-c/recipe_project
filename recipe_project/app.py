@@ -151,6 +151,13 @@ def recipe_list_page():
                         'basic_tools': row.get('기본 조리도구') or '-',
                         'extra_tools': row.get('추가 조리도구') or '-'
                     })
+                    
+                    raw_link = row.get('링크')
+                    final_link = '#'
+                    if raw_link and str(raw_link).strip():
+                        final_link = str(raw_link).strip()
+                        if not final_link.startswith('http'):
+                            final_link = 'https://' + final_link
         conn.close()
 
     except Exception as e:
