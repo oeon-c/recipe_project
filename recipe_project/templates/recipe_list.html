@@ -3,72 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>추천 レ시피 목록</title>
+    <title>갖고 있는 재료 선택하기</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1 style="text-align: center;">추천 레시피 보기</h1>
+    <h1 style="text-align: center;">갖고 있는 재료 선택하기</h1>
 
-    <div class="category-section">
-        <label class="category-label">
-            <input type="checkbox" class="category-filter" value="식사" checked>
-            <span>식사류 보기</span>
-        </label>
-        <label class="category-label">
-            <input type="checkbox" class="category-filter" value="간식" checked>
-            <span>간식류 보기</span>
-        </label>
+    <div class="search-section">
+        <input type="text" id="search-input" class="search-bar" placeholder="필요한 재료를 검색해 보세요! (엔터)">
     </div>
 
-    <div class="recipe-grid-container">
-        <div class="recipe-grid">
-            {% if recipes %}
-                {% for recipe in recipes %}
-                <div class="recipe-item" data-category="{{ recipe.category }}">
-                    <span class="recipe-title">{{ recipe.name }}</span>
-                    <span class="recipe-badge">{{ recipe.category }}</span>
-                </div>
-                {% endfor %}
-            {% else %}
-                <p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">추천 결과 조건에 부합하는 레시피가 없습니다.</p>
-            {% endif %}
+    <div class="selected-section">
+        <h3 class="section-title">선택된 재료</h3>
+        <div id="selected-container" class="selected-container"></div>
+    </div>
+
+    <div class="ingredients-list-section">
+        <h3 class="section-title">전체 재료 목록</h3>
+        <div class="ingredients-grid-container">
+            <div class="ingredients-grid">
+                {% if ingredients %}
+                    {% for ingredient in ingredients %}
+                    <label class="ingredient-item" data-name="{{ ingredient.name }}">
+                        <input type="checkbox" class="ingredient-checkbox" name="ingredients" value="{{ ingredient.name }}">
+                        <span class="ingredient-name">{{ ingredient.name }}</span>
+                    </label>
+                    {% endfor %}
+                {% else %}
+                    <p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">등록된 재료가 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="recipe-results-section" style="margin-top: 50px;">
+        <h2 style="text-align: center;">나에게 맞는 추천 레시피 결과</h2>
+        
+        <div class="recipe-controller" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+            <div class="category-radio-group">
+                <label><input type="radio" name="recipe-cat" value="전체" checked> 전체보기</label>
+                <label style="margin-left: 15px;"><input type="radio" name="recipe-cat" value="식사"> 식사류</label>
+                <label style="margin-left: 15px;"><input type="radio" name="recipe-cat" value="간식"> 간식류</label>
+            </div>
+            <input type="text" id="recipe-search-input" class="search-bar" style="width: 250px; margin: 0; padding: 8px 15px;" placeholder="결과 내 레시피명 검색">
+        </div>
+
+        <div class="recipe-table-container">
+            <table class="recipe-table">
+                <thead>
+                    <tr>
+                        <th>레시피명</th>
+                        <th>구분</th>
+                        <th>필요 재료</th>
+                        <th>조리도구</th>
+                        <th>바로가기</th>
+                    </tr>
+                </thead>
+                <tbody id="recipe-table-body">
+                    </tbody>
+            </table>
         </div>
     </div>
 
     <div class="box-container-center" style="margin-top: 50px">
-        <a href="/select_ingredients" style="text-decoration: none;">
-            <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">이전으로 (재료 선택)</span>
-        </a>
         <a href="/" style="text-decoration: none;">
-            <span class="text-box" style="background-color: #ff5722; color: white;">처음으로 돌아가기</span>
+            <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">이전으로</span>
         </a>
     </div>
 
     <script>
-        const categoryFilters = document.querySelectorAll('.category-filter');
-        const recipeItems = document.querySelectorAll('.recipe-item');
+        // 백엔드에서 넘겨받은 전체 레시피 데이터를 자바스크립트 배열로 치환
+        const allRecipes = {{ all_recipes | tojson | safe }};
 
-        function filterRecipes() {
-            const activeCategories = Array.from(categoryFilters)
-                                          .filter(cb => cb.checked)
-                                          .map(cb => cb.value);
+        const searchInput = document.getElementById('search-input');
+        const ingredientItems = document.querySelectorAll('.ingredient-item');
+        const checkboxes = document.querySelectorAll('.ingredient-checkbox');
+        const selectedContainer = document.getElementById('selected-container');
+        
+        const recipeTableBody = document.getElementById('recipe-table-body');
+        const categoryRadios = document.querySelectorAll('input[name="recipe-cat"]');
+        const recipeSearchInput = document.getElementById('recipe-search-input');
 
-            recipeItems.forEach(item => {
-                const itemCategory = item.getAttribute('data-category');
-                
-                if (activeCategories.includes(itemCategory)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
+        // 1. 선택된 재료 기반 배지 업데이트 및 레시피 표 실시간 갱신 트리거
+        function updateSelectedBadges() {
+            selectedContainer.innerHTML = '';
+            let selectedIngredients = [];
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const name = checkbox.value;
+                    selectedIngredients.push(name);
+
+                    const badge = document.createElement('span');
+                    badge.className = 'text-box selected-badge';
+                    badge.innerHTML = `${name} <b style="color:#ff5722; margin-left: 5px; cursor: pointer;">X</b>`;
+
+                    badge.querySelector('b').addEventListener('click', () => {
+                        checkbox.checked = false;
+                        updateSelectedBadges();
+                    });
+                    selectedContainer.appendChild(badge);
                 }
             });
+
+            // 재료 선택 상태가 바뀔 때마다 하단 레시피 표를 새로고침합니다
+            renderFilteredRecipes(selectedIngredients);
         }
 
-        categoryFilters.forEach(filter => {
-            filter.addEventListener('change', filterRecipes);
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedBadges);
         });
 
-        filterRecipes();
+        // 2. 💡 핵심 로직: 선택된 재료 + 카테고리 탭 + 레시피명 검색어를 조합한 다중 필터링 렌더링 함수
+        function renderFilteredRecipes(selectedIngredients = []) {
+            // 현재 선택된 카테고리 라디오 값 가져오기
+            const activeCategory = Array.from(categoryRadios).find(r => r.checked).value;
+            // 입력된 레시피 검색어 가져오기
+            const recipeKeyword = recipeSearchInput.value.trim().toLowerCase();
+
+            recipeTableBody.innerHTML = '';
+
+            // 필터링 규칙 적용
+            const filtered = allRecipes.filter(recipe => {
+                // 조건 A: 선택한 재료 중 하나라도 레시피 재료 열에 포함되어 있는가 (재료 미선택 시 전체 출력)
+                const matchesIngredient = selectedIngredients.length === 0 || selectedIngredients.some(ing => recipe.ingredients.includes(ing));
+                
+                // 조건 B: 카테고리(식사/간식)가 일치하는가
+                const matchesCategory = activeCategory === '전체' || recipe.category === activeCategory;
+                
+                // 조건 C: 레시피명 검색어가 포함되는가
+                const matchesName = recipe.name.toLowerCase().includes(recipeKeyword);
+
+                return matchesIngredient && matchesCategory && matchesName;
+            });
+
+            // 필터링된 결과를 표에 생성
+            if (filtered.length > 0) {
+                filtered.forEach(recipe => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight: bold; color: #333;">${recipe.name}</td>
+                        <td><span class="recipe-badge" style="background-color: ${recipe.category === '식사' ? '#ffe0b2' : '#e1f5fe'}; color: ${recipe.category === '식사' ? '#ff5722' : '#0288d1'};">${recipe.category}</span></td>
+                        <td style="font-size: 13px; text-align: left;">${recipe.ingredients}</td>
+                        <td>${recipe.tools}</td>
+                        <td><a href="${recipe.link}" target="_blank" style="color: #ff5722; text-decoration: none; font-weight: bold;">보기</a></td>
+                    `;
+                    recipeTableBody.appendChild(tr);
+                });
+            } else {
+                recipeTableBody.innerHTML = `<tr><td colspan="5" style="color: #999; padding: 30px;">조건에 맞는 레시피 결과가 존재하지 않습니다.</td></tr>`;
+            }
+        }
+
+        // 카테고리 및 레시피 검색 입력박스에 이벤트 리스너 결합
+        categoryRadios.forEach(radio => radio.addEventListener('change', () => {
+            const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+            renderFilteredRecipes(selected);
+        }));
+        
+        recipeSearchInput.addEventListener('input', () => {
+            const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+            renderFilteredRecipes(selected);
+        });
+
+        // 3. 기존 재료 탐색용 검색 스크립트 유지
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const keyword = this.value.trim();
+                if (!keyword) return;
+                let foundItem = null;
+                for (let item of ingredientItems) {
+                    const ingredientName = item.getAttribute('data-name');
+                    if (ingredientName.includes(keyword)) {
+                        foundItem = item;
+                        break;
+                    }
+                }
+                if (foundItem) {
+                    alert(`'${keyword}' 재료를 찾았습니다! 해당 위치로 이동합니다.`);
+                    foundItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    foundItem.style.borderColor = '#ff5722';
+                    foundItem.style.backgroundColor = '#fff9f6';
+                    setTimeout(() => {
+                        foundItem.style.borderColor = '#ddd';
+                        foundItem.style.backgroundColor = 'white';
+                    }, 1500);
+                } else {
+                    alert(`'${keyword}'은(는) 전체 목록에 등록되어 있지 않은 재료입니다.`);
+                }
+            }
+        });
+
+        // 페이지 최초 구동 시 초기화 렌더링 실행
+        renderFilteredRecipes();
     </script>
 </body>
 </html>
