@@ -152,12 +152,23 @@ def recipe_list_page():
                         'extra_tools': row.get('추가 조리도구') or '-'
                     })
                     
-                    raw_link = row.get('링크')
+                   # 열 이름에 공백이 포함된 경우를 대비해 '링크'라는 단어가 포함된 키를 동적으로 탐색
+                    raw_link = None
+                    for key, val in row.items():
+                        if '링크' in key:
+                            raw_link = val
+                            break
+                            
                     final_link = '#'
-                    if raw_link and str(raw_link).strip():
-                        final_link = str(raw_link).strip()
-                        if not final_link.startswith('http'):
-                            final_link = 'https://' + final_link
+                    if raw_link:
+                        clean_link = str(raw_link).strip()
+                        # nan, None 등 결측치가 문자열로 들어온 경우와 불필요한 따옴표 제거
+                        if clean_link and clean_link.lower() not in ['nan', 'none', 'null', '#']:
+                            clean_link = clean_link.replace('"', '').replace("'", "")
+                            if not clean_link.startswith('http'):
+                                final_link = 'https://' + clean_link
+                            else:
+                                final_link = clean_link
         conn.close()
 
     except Exception as e:
