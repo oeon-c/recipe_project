@@ -88,7 +88,7 @@ for i in df_ingre["재료"]:        #집합 만들기(중복제거)
 ingre_list = list(ingre_set)    #집합을 리스트로 만들기
 
 
-#=======================================================
+#================메인페이지('/')=========================
 
 @app.route('/')
 def home():
@@ -132,6 +132,8 @@ def select_ingredients():
 
     # 3. HTML 템플릿의 변수명 'ingredients'와 정확히 매치하여 렌더링 리턴
     return render_template('select_ingredients.html', ingredients=ingredients_list)
+
+#============갖고있는 재료 선택 페이지==============
 
 @app.route('/recipe_list')
 def recipe_list_page():
