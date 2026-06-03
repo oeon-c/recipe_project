@@ -22,6 +22,7 @@ def get_db_connection():
         password='1234',
         db='recipe_db',
         charset='utf8'
+        cursorclass=pymysql.cursors.DictCursor
     )
 
 
@@ -99,44 +100,8 @@ def home():
 
 @app.route('/select_ingredients')
 def select_ingredients():
-    ingredients_list = []
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # 1. 단수형 테이블(recipe)에서 데이터 조회
-        cursor.execute("SELECT DISTINCT 재료 FROM recipe")
-        result_rows = cursor.fetchall()
-        
-        # 가상머신 터미널에서 데이터가 제대로 넘어오는지 실시간 확인용 로그
-        print(f"=== [디버깅] DB 원본 데이터 추출 결과: {result_rows} ===")
-        
-        ingredients_set = set()
-        for row in result_rows:
-            # 💡 DictCursor 특성상 대소문자나 공백에 의해 키값이 다를 수 있으므로 검증
-            # row가 딕셔너리 형태가 맞는지, '재료' 키가 존재하는지 체크합니다.
-            if row and isinstance(row, dict) and row.get('재료'):
-                # 쉼표(,)로 구분된 재료들을 분리하여 공백을 제거하고 세트에 추가
-                for item in row['재료'].split(','):
-                    cleaned = item.strip()
-                    if cleaned:
-                        ingredients_set.add(cleaned)
-                        
-        # 2. 💡 HTML 템플릿의 {% for ingredient in ingredients %} 문법과 100% 일치하도록 딕셔너리 리스트 구조화
-        ingredients_list = [{'id': idx, 'name': name} for idx, name in enumerate(sorted(list(ingredients_set)))]
-        conn.close()
-        
-        print(f"=== [디버깅] HTML로 전달할 최종 가공 데이터: {ingredients_list} ===")
-        
-    except Exception as e:
-        # 💡 화면이 비어있을 때 터미널에서 진짜 원인을 잡아내기 위한 구문
-        print(f"❌ [에러 리포트] 전체 재료 목록 로드 중 치명적 실패: {e}")
-        ingredients_list = []
-
-
-
-    
-    # 3. HTML 템플릿의 변수명 'ingredients'와 정확히 매치하여 렌더링 리턴
+    ingredients_list = [{'id': idx, 'name': name} for idx, name in enumerate(sorted(ingre_list))]
+    # HTML 템플릿의 변수명 'ingredients'와 정확히 매치하여 렌더링 리턴
     return render_template('select_ingredients.html', ingredients=ingredients_list)
 
 #============갖고있는 재료 선택 페이지==============
@@ -146,62 +111,39 @@ def recipe_list_page():
     recipes_list = []
     selected_ingredients = []
     try:
-        #사용자가 화면에서 선택한 재료 목록 가져오기
         selected_ingredients = request.args.getlist('ingredients')
 
-        #마리아 디비 연결
+        # ✅ 수정: DB 전체 조회 + 재료 비교 로직 삭제하고 아래로 대체
+        # 1. df_ingre로 재료 비교해서 매칭된 레시피명 추출
+        matched_names = []
+        for idx, row in df_ingre.iterrows():
+            if len(selected_ingredients) == 0:
+                matched_names.append(row['레시피명'])
+            else:
+                for ing in selected_ingredients:
+                    for ingre_group in row['재료']:
+                        if ing == ingre_group[0]:
+                            matched_names.append(row['레시피명'])
+                            break
+
+        # 2. 매칭된 레시피명으로 DB에서 상세정보 조회
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        #마리아디비에서 csv가져오기
-        cursor.execute("SELECT * FROM recipe")
+        placeholders = ', '.join(['%s'] * len(matched_names))
+        cursor.execute(f"SELECT * FROM recipe WHERE 레시피명 IN ({placeholders})", matched_names)
         all_recipes = cursor.fetchall()
 
-        #디비에서 재료 칼럼 가져와 선택 목록과 비교
         for row in all_recipes:
-            if row:
-                recipe_ingredients = str(row.get('재료', ''))
-                
-                is_matched = False
-                if len(selected_ingredients) == 0:
-                    is_matched = True
-                else:
-                    for ing in selected_ingredients:
-                        if ing in recipe_ingredients:
-                            is_matched = True
-                            break
-
-                #만약 둘이 같다면 해당 레시피를 화면에 보낼 리스트에 담기
-                if is_matched:
-                    recipes_list.append({
-                        'name': row.get('레시피명') or '-',
-                        'ingredients': recipe_ingredients,
-                        'tool': row.get('조리도구') or '-',
-                        'recipe_desc': row.get('레시피') or '-',
-                        'category': row.get('식사/간식') or '식사',
-                        'link': row.get('링크') or '#',
-                        'basic_tools': row.get('기본 조리도구') or '-',
-                        'extra_tools': row.get('추가 조리도구') or '-'
-                    })
-                    
-                   # 열 이름에 공백이 포함된 경우를 대비해 '링크'라는 단어가 포함된 키를 동적으로 탐색
-                    raw_link = None
-                    for key, val in row.items():
-                        if '링크' in key:
-                            raw_link = val
-                            break
-
-                    #링크 오타 및 결측치 정제 작업
-                    final_link = '#'
-                    if raw_link:
-                        clean_link = str(raw_link).strip()
-                        # nan, None 등 결측치가 문자열로 들어온 경우와 불필요한 따옴표 제거
-                        if clean_link and clean_link.lower() not in ['nan', 'none', 'null', '#']:
-                            clean_link = clean_link.replace('"', '').replace("'", "")
-                            if not clean_link.startswith('http'):
-                                final_link = 'https://' + clean_link
-                            else:
-                                final_link = clean_link
+            recipes_list.append({
+                'name': row.get('레시피명') or '-',
+                'ingredients': row.get('재료') or '-',
+                'tool': row.get('조리도구') or '-',
+                'recipe_desc': row.get('레시피') or '-',
+                'category': row.get('식사/간식') or '식사',
+                'link': row.get('링크') or '#',
+                'basic_tools': row.get('기본 조리도구') or '-',
+                'extra_tools': row.get('추가 조리도구') or '-'
+            })
         conn.close()
 
     except Exception as e:
@@ -209,8 +151,6 @@ def recipe_list_page():
         recipes_list = []
 
     return render_template('recipe_list.html', recipes=recipes_list, selected_ingredients=selected_ingredients)
-
-
 #======================================
 
 if __name__ == '__main__':
