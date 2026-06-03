@@ -33,7 +33,7 @@ services:
     depends_on:
       - mariadb                        # 16. [중요] 마리아DB 컴퓨터가 '먼저' 완전히 켜진 다음에 이 플라스크를 켜라
     volumes:
-      - ./recipe_data.csv:/app/recipe_data.csv
+      - ./recipe_data6.csv:/app/recipe_data.csv
 
 
 # [저장 공간 설정]
