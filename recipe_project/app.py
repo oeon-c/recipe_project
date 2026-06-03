@@ -39,7 +39,7 @@ def init_db():
             
 
     #3. csv를 판다스 dataframe으로 불러오기
-    df = pd.read_csv("recipe_data3.csv")
+    df = pd.read_csv("recipe_data6.csv")
     df.to_sql(name='recipe', con=engine, if_exists='replace', index=False)
 
     
@@ -66,7 +66,7 @@ df_ingre = pd.read_sql_query("SELECT 레시피명, 재료 FROM recipe", engine)
 new_ingre_columns = []    #이후에 데이터프레임을 대체할 리스트 선언
 
 for row_text in df_ingre["재료"]:                #df_ingre["재료"]에서 행 단위로 불러오기 -> row_text
-    comma_split = row_text.split(", ")          #row_text를 ", "단위로 나눠 comma_split 리스트로 만들기
+    comma_split = row_text.split(",")          #row_text를 ", "단위로 나눠 comma_split 리스트로 만들기
     
     one_recipe_list = []                        #["계란", "1개"] 단위의 리스트 선언
     for item in comma_split:                     #comma_split을 " "단위로 나눠 space_split 리스트로 만들기 
@@ -197,6 +197,9 @@ def recipe_list_page():
         recipes_list = []
 
     return render_template('recipe_list.html', recipes=recipes_list, selected_ingredients=selected_ingredients)
+
+
+#======================================
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
