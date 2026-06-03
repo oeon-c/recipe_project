@@ -21,7 +21,7 @@ def get_db_connection():
         user='root',
         password='1234',
         db='recipe_db',
-        charset='utf8'
+        charset='utf8',
         cursorclass=pymysql.cursors.DictCursor
     )
 
