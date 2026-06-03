@@ -133,6 +133,9 @@ def select_ingredients():
         print(f"❌ [에러 리포트] 전체 재료 목록 로드 중 치명적 실패: {e}")
         ingredients_list = []
 
+
+
+    
     # 3. HTML 템플릿의 변수명 'ingredients'와 정확히 매치하여 렌더링 리턴
     return render_template('select_ingredients.html', ingredients=ingredients_list)
 
