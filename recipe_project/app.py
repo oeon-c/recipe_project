@@ -126,6 +126,9 @@ def recipe_list_page():
                         if ing == ingre_group[0]:
                             matched_names.append(row['레시피명'])
                             break
+        print(f"선택 재료: {selected_ingredients}")      # ← 추가
+        print(f"매칭된 레시피: {matched_names}")          # ← 추가
+        print(f"df_ingre 재료 샘플: {df_ingre['재료'][0]}")  # ← 추가
 
         # 2. 매칭된 레시피명으로 DB에서 상세정보 조회
         conn = get_db_connection()
