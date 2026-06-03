@@ -5,6 +5,7 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 import time
 import re
+import json
 
 app = Flask(__name__)   #플라스크 앱 생성
 CORS(app)
@@ -140,17 +141,21 @@ def recipe_list_page():
     recipes_list = []
     selected_ingredients = []
     try:
+        #사용자가 화면에서 선택한 재료 목록 가져오기
         selected_ingredients = request.args.getlist('ingredients')
-        
+
+        #마리아 디비 연결
         conn = get_db_connection()
         cursor = conn.cursor()
-        
+
+        #마리아디비에서 csv가져오기
         cursor.execute("SELECT * FROM recipe")
         all_recipes = cursor.fetchall()
-        
+
+        #디비에서 재료 칼럼 가져와 선택 목록과 비교
         for row in all_recipes:
             if row:
-                recipe_ingredients = str(row.get('재료', '')) if row.get('재료') else ''
+                recipe_ingredients = str(row.get('재료', ''))
                 
                 is_matched = False
                 if len(selected_ingredients) == 0:
@@ -160,7 +165,8 @@ def recipe_list_page():
                         if ing in recipe_ingredients:
                             is_matched = True
                             break
-                            
+
+                #만약 둘이 같다면 해당 레시피를 화면에 보낼 리스트에 담기
                 if is_matched:
                     recipes_list.append({
                         'name': row.get('레시피명') or '-',
@@ -179,7 +185,8 @@ def recipe_list_page():
                         if '링크' in key:
                             raw_link = val
                             break
-                            
+
+                    #링크 오타 및 결측치 정제 작업
                     final_link = '#'
                     if raw_link:
                         clean_link = str(raw_link).strip()
