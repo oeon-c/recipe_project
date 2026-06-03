@@ -11,7 +11,7 @@ CORS(app)
 
 
 #==========데이터 불러오기=============
-
+#1. mariadb 가져오기
 def get_db_connection():
     return pymysql.connect(
         #host='mariadb',    #도커에서 실행할 때
@@ -24,9 +24,8 @@ def get_db_connection():
     )
 
 
-
-
-def init_db():                  #엔진 가져오기 
+def init_db():
+    #2. 엔진 만들기 
     for i in range(5):
         try:
             #engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')     #docker에서 돌릴 때 사용
@@ -37,16 +36,14 @@ def init_db():                  #엔진 가져오기
         except:
             print(f"DB 대기 중...({i}/5)")
             time.sleep(3)
+            
 
-
-
-
+    #3. csv를 판다스 dataframe으로 불러오기
     df = pd.read_csv("recipe_data3.csv")
     df.to_sql(name='recipe', con=engine, if_exists='replace', index=False)
 
-
-            
-
+    
+    #4. 엔진으로 df와 db 연결
     with engine.connect() as conn:
         try:
             count = conn.execute(text("SELECT COUNT(*) FROM recipe")).scalar()
@@ -55,43 +52,40 @@ def init_db():                  #엔진 가져오기
                 return engine
         except:
             pass
-
-    return engine
-
-
+    return engine        #engine 반환
 
 engine = init_db()
 
 #==============재료 판다스 데이터 프레임 만들기==================
 
 df_ingre = pd.read_sql_query("SELECT 레시피명, 재료 FROM recipe", engine)
-#engine으로 불러온 데이터베이스의 레시피명, 재료 열만 판다스 dataframe으로 불러오기
+#engine으로 불러온 mariadb의 데이터베이스에서 레시피명, 재료 열만 판다스 dataframe으로 불러오기
 
-print(df_ingre)
+#print(df_ingre)
 
-new_ingre_columns = []
+new_ingre_columns = []    #이후에 데이터프레임을 대체할 리스트 선언
 
-for row_text in df_ingre["재료"]:
-    comma_split = row_text.split(", ")
+for row_text in df_ingre["재료"]:                #df_ingre["재료"]에서 행 단위로 불러오기 -> row_text
+    comma_split = row_text.split(", ")          #row_text를 ", "단위로 나눠 comma_split 리스트로 만들기
     
-    one_recipe_list = []
-    for item in comma_split:
+    one_recipe_list = []                        #["계란", "1개"] 단위의 리스트 선언
+    for item in comma_split:                     #comma_split을 " "단위로 나눠 space_split 리스트로 만들기 
         space_split = item.split(" ")
-        one_recipe_list.append(space_split)
+        one_recipe_list.append(space_split)    #space_split을 모아 one_recipe_columns 리스트 만들기
     
-    new_ingre_columns.append(one_recipe_list)
-df_ingre["재료"] = new_ingre_columns
+    new_ingre_columns.append(one_recipe_list)    #one_recipe_columns 모아 new_ingre_columns 리스트 만들기
+df_ingre["재료"] = new_ingre_columns                #리스트로 column 대체
 
-print(df_ingre)
+#print(df_ingre)
 
-ingre_set = set()
+ingre_set = set()                #개수 없는 재료 들어갈 집합 선언
 
-for i in df_ingre["재료"]:
+for i in df_ingre["재료"]:        #집합 만들기(중복제거)
     for j in i:
         ingre_set.add(j[0])
 
 
-ingre_list = list(ingre_set)
+ingre_list = list(ingre_set)    #집합을 리스트로 만들기
 
 
 #=======================================================
