@@ -6,70 +6,95 @@ from sqlalchemy import create_engine, text
 import time
 import re
 
-#local로 돌릴려면 컴터에 미리 docker를 깔고 docker compose up -d mariadb 쳐야함
-#리눅스에서는 docker compose up -d --build 치면 firefox로 웹 확인가능
-
 app = Flask(__name__)   #플라스크 앱 생성
 CORS(app)
 
+
+#==========데이터 불러오기=============
+
 def get_db_connection():
     return pymysql.connect(
-        host='mariadb',
-        #host='127.0.0.1',
-        port=3306,
+        #host='mariadb',    #도커에서 실행할 때
+        host='127.0.0.1',    #python에서 
+        port=3307,
         user='root',
         password='1234',
-        database='recipe_db',
-        charset='utf8',  # 💡 쉼표(,) 추가 완료
-        cursorclass=pymysql.cursors.DictCursor
+        db='recipe_db',
+        charset='utf8'
     )
 
-def init_db():
-    engine = None
-    db_url = 'mysql+pymysql://root:1234@mariadb:3306/recipe_db'
 
+
+
+def init_db():                  #엔진 가져오기 
     for i in range(5):
         try:
-            engine = create_engine(db_url)
+            #engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')     #docker에서 돌릴 때 사용
+            engine = create_engine('mysql+pymysql://root:1234@127.0.0.1:3307/recipe_db')      #로컬에서 돌릴 때 사용
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
-            print("✅ 데이터베이스 엔진 연결 성공!")
             break
-        except Exception as conn_err:
-            print(f"DB 대기 중...({i+1}/5) 원인: {conn_err}")
+        except:
+            print(f"DB 대기 중...({i}/5)")
             time.sleep(3)
 
-    if engine is None:
-        print("❌ DB 연결에 최종 실패했습니다.")
-        return None
 
-    try:
-        with engine.connect() as conn:
+
+
+    df = pd.read_csv("recipe_data3.csv")
+    df.to_sql(name='recipe', con=engine, if_exists='replace', index=False)
+
+
+            
+
+    with engine.connect() as conn:
+        try:
             count = conn.execute(text("SELECT COUNT(*) FROM recipe")).scalar()
             if count > 0:
-                print("이미 데이터 있음 - 스킵")
+                print("이미 데이터 있음 -스킵")
                 return engine
-    except Exception as table_err:
-        print(f"테이블 체크 중 참고사항: {table_err}")
+        except:
+            pass
 
-    try:
-        df0 = pd.read_csv("recipe_data.csv")
-        
-        # 💡 지우거나 이름을 바꾸지 않고 불필요한 행 정돈 및 전체 열 유지
-        df = df0.dropna(axis=1, how='all', inplace=False)
-        df = df.dropna(subset=['레시피명'])
-
-        # 테이블을 새로 생성하면서 데이터 적재
-        df.to_sql(name='recipe', con=engine, if_exists='replace', index=False)
-        print("✅ 원본 열 구조 그대로 recipe 테이블 적재 완료!")
-        
-    except Exception as data_err:
-        print(f"❌ CSV 데이터 가공 및 적재 중 에러 발생: {data_err}")
-        
     return engine
+
+
 
 engine = init_db()
 
+#==============재료 판다스 데이터 프레임 만들기==================
+
+df_ingre = pd.read_sql_query("SELECT 레시피명, 재료 FROM recipe", engine)
+#engine으로 불러온 데이터베이스의 레시피명, 재료 열만 판다스 dataframe으로 불러오기
+
+print(df_ingre)
+
+new_ingre_columns = []
+
+for row_text in df_ingre["재료"]:
+    comma_split = row_text.split(", ")
+    
+    one_recipe_list = []
+    for item in comma_split:
+        space_split = item.split(" ")
+        one_recipe_list.append(space_split)
+    
+    new_ingre_columns.append(one_recipe_list)
+df_ingre["재료"] = new_ingre_columns
+
+print(df_ingre)
+
+ingre_set = set()
+
+for i in df_ingre["재료"]:
+    for j in i:
+        ingre_set.add(j[0])
+
+
+ingre_list = list(ingre_set)
+
+
+#=======================================================
 
 @app.route('/')
 def home():
