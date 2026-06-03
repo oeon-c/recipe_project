@@ -17,7 +17,8 @@ def get_db_connection():
     return pymysql.connect(
         host='mariadb',    #도커에서 실행할 때
         #host='127.0.0.1',    #python에서 
-        port=3307,
+        port=3306,        #도커에서 실행할 떄
+        #port=3307,
         user='root',
         password='1234',
         db='recipe_db',
