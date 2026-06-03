@@ -15,8 +15,8 @@ CORS(app)
 #1. mariadb 가져오기
 def get_db_connection():
     return pymysql.connect(
-        #host='mariadb',    #도커에서 실행할 때
-        host='127.0.0.1',    #python에서 
+        host='mariadb',    #도커에서 실행할 때
+        #host='127.0.0.1',    #python에서 
         port=3307,
         user='root',
         password='1234',
@@ -29,8 +29,8 @@ def init_db():
     #2. 엔진 만들기 
     for i in range(5):
         try:
-            #engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')     #docker에서 돌릴 때 사용
-            engine = create_engine('mysql+pymysql://root:1234@127.0.0.1:3307/recipe_db')      #로컬에서 돌릴 때 사용
+            engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')     #docker에서 돌릴 때 사용
+            #engine = create_engine('mysql+pymysql://root:1234@127.0.0.1:3307/recipe_db')      #로컬에서 돌릴 때 사용
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
             break
