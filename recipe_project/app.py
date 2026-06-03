@@ -95,6 +95,8 @@ ingre_list = list(ingre_set)    #집합을 리스트로 만들기
 def home():
     return render_template('init.html')
 
+#============레시피 선택('/select_ingredients')============
+
 @app.route('/select_ingredients')
 def select_ingredients():
     ingredients_list = []
