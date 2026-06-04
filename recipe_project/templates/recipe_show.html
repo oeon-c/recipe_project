@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ recipe.name }} - 상세 정보</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div style="max-width: 800px; margin: 50px auto; padding: 30px; background-color: #fff; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+        
+        <h1 style="text-align: center; color: #ff5722; margin-bottom: 30px;">{{ recipe.name }}</h1>
+        
+        <div style="margin-bottom: 20px; line-height: 1.8;">
+            <p><strong>구분:</strong> <span style="background-color: #ffe0b2; color: #ff5722; padding: 3px 8px; border-radius: 5px; font-size: 14px;">{{ recipe.category }}</span></p>
+            <p><strong>필요 재료:</strong> {{ recipe.ingredients }}</p>
+            <p><strong>전체 조리도구:</strong> {{ recipe.tool }}</p>
+            <p><strong>기본 조리도구:</strong> {{ recipe.basic_tools }}</p>
+            <p><strong>추가 조리도구:</strong> {{ recipe.extra_tools }}</p>
+        </div>
+
+        <hr style="border: 1px solid #eee; margin: 30px 0;">
+
+        <div>
+            <h3 style="color: #333; margin-bottom: 15px;">조리 방법 (레시피)</h3>
+            <p style="white-space: pre-wrap; background-color: #f9f9f9; padding: 20px; border-radius: 5px; color: #555; font-size: 15px; line-height: 1.6;">{{ recipe.recipe_desc }}</p>
+        </div>
+
+        <div style="margin-top: 40px; display: flex; justify-content: center; gap: 20px;">
+            <button onclick="history.back()" style="background-color: #e0e0e0; color: #333; border: none; padding: 12px 25px; border-radius: 5px; font-size: 16px; cursor: pointer;">
+                목록으로 돌아가기
+            </button>
+            
+            <a href="{{ recipe.link }}" target="_blank" style="background-color: #ff5722; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-size: 16px; text-align: center;">
+                외부 링크 보기
+            </a>
+        </div>
+        
+    </div>
+</body>
+</html>
