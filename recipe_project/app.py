@@ -155,7 +155,76 @@ def recipe_list_page():
         recipes_list = []
 
     return render_template('recipe_list.html', recipes=recipes_list, selected_ingredients=selected_ingredients)
-#======================================
+    
+#==================레시피 상세화면====================
+
+@app.route('/recipe_show')
+def recipe_detail_page():
+    # 1. HTML의 a 태그에서 보낸 '?name=레시피이름' 데이터를 수집합니다.
+    recipe_name = request.args.get('name')
+    
+    # 만약 이름이 전달되지 않고 비정상적으로 접근했다면 에러 메시지를 띄웁니다.
+    if not recipe_name:
+        return "레시피 이름이 전달되지 않았습니다.", 400
+        
+    recipe_info = {}
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 2. 데이터베이스 조회
+        # WHERE 조건절을 사용하여 '레시피명' 열이 전달받은 이름과 정확히 일치하는 데이터만 찾습니다.
+        # %s를 사용하는 이유는 SQL 인젝션(해킹)을 방지하기 위한 안전한 파라미터 바인딩 방식입니다.
+        cursor.execute("SELECT * FROM recipe WHERE 레시피명 = %s", (recipe_name,))
+        
+        # 목록을 띄울 때는 fetchall()로 전부 가져왔지만, 
+        # 상세 페이지는 레시피 1개만 필요하므로 fetchone()을 사용하여 단일 행만 가져옵니다.
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            # 3. 링크 전처리 과정 (목록 페이지와 동일하게 깨진 링크를 복구합니다)
+            raw_link = None
+            # 딕셔너리의 키(열 이름) 중에서 '링크'라는 단어가 포함된 것을 찾습니다.
+            for key, val in row.items():
+                if '링크' in key:
+                    raw_link = val
+                    break
+                    
+            final_link = '#'
+            if raw_link:
+                clean_link = str(raw_link).strip()
+                # nan, None 등 데이터베이스의 빈 값이 문자열로 넘어온 경우를 걸러냅니다.
+                if clean_link and clean_link.lower() not in ['nan', 'none', 'null', '#']:
+                    # 잘못 들어간 따옴표를 제거합니다.
+                    clean_link = clean_link.replace('"', '').replace("'", "")
+                    # 주소가 http로 시작하지 않으면 강제로 https:// 를 붙여 외부 링크 이동이 가능하게 만듭니다.
+                    if not clean_link.startswith('http'):
+                        final_link = 'https://' + clean_link
+                    else:
+                        final_link = clean_link
+
+            # 4. HTML로 넘겨줄 하나의 딕셔너리(객체)로 데이터를 예쁘게 포장합니다.
+            recipe_info = {
+                'name': row.get('레시피명') or '-',
+                'ingredients': row.get('재료') or '-',
+                'tool': row.get('조리도구') or '-',
+                'recipe_desc': row.get('레시피') or '-',
+                'category': row.get('식사/간식') or '식사',
+                'basic_tools': row.get('기본 조리도구') or '-',
+                'extra_tools': row.get('추가 조리도구') or '-',
+                'link': final_link
+            }
+        else:
+            # DB에서 이름을 찾지 못한 경우
+            return "해당 레시피를 찾을 수 없습니다.", 404
+            
+    except Exception as e:
+        print(f"상세 페이지 데이터 조회 중 에러: {e}")
+        return "서버 오류가 발생했습니다.", 500
+
+    # 5. 최종 가공된 recipe_info 데이터를 recipe_detail.html 파일로 넘겨주며 화면을 그립니다.
+    return render_template('recipe_show.html', recipe=recipe_info)
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
