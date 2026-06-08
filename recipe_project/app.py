@@ -225,6 +225,46 @@ def recipe_detail_page():
 
     # 5. 최종 가공된 recipe_info 데이터를 recipe_detail.html 파일로 넘겨주며 화면을 그립니다.
     return render_template('recipe_show.html', recipe=recipe_info)
+# ================= 레시피 추가 기능 =================
+
+@app.route('/add_recipe', methods=['GET', 'POST'])
+def add_recipe():
+    # 1. 사용자가 [등록하기] 버튼을 눌러서 데이터를 보냈을 때 (POST 방식)
+    if request.method == 'POST':
+        name = request.form.get('recipe_name')
+        ingredients = request.form.get('ingredients')
+        tool = request.form.get('tool')
+        category = request.form.get('category')
+        link = request.form.get('link')
+        
+        try:
+            # DB 창고 문 열기
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # DB에 데이터 밀어넣기 (INSERT)
+            # 주의: '식사/간식' 처럼 특수문자(/)가 들어간 컬럼명은 반드시 백틱(`)으로 감싸야 SQL 에러가 안 납니다!
+            sql = """
+                INSERT INTO recipe (레시피명, 재료, 조리도구, `식사/간식`, 링크) 
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            # %s 를 쓰면 해킹(SQL 인젝션)을 방지하면서 안전하게 데이터를 넣을 수 있습니다.
+            cursor.execute(sql, (name, ingredients, tool, category, link))
+            
+            # 저장 확정 짓고 문 닫기
+            conn.commit()
+            conn.close()
+            
+            # 성공했다는 팝업창을 띄우고 메인 화면('/')으로 튕겨냅니다.
+            return "<script>alert('레시피가 성공적으로 추가되었습니다!'); window.location.href='/';</script>"
+            
+        except Exception as e:
+            print(f"레시피 추가 중 DB 에러: {e}")
+            return f"데이터를 저장하는 중 에러가 발생했습니다: {e}"
+
+    # 2. 그냥 링크를 타고 처음 접속했을 때 (GET 방식) -> 빈 폼 화면 보여주기
+    return render_template('add_recipe.html')
+
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
