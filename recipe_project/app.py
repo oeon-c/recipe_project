@@ -235,6 +235,7 @@ def add_recipe():
         ingredients = request.form.get('ingredients')
         tool = request.form.get('tool')
         category = request.form.get('category')
+        desc = request.form.get('recipe_desc')
         link = request.form.get('link')
         
         try:
@@ -245,8 +246,8 @@ def add_recipe():
             # DB에 데이터 밀어넣기 (INSERT)
             # 주의: '식사/간식' 처럼 특수문자(/)가 들어간 컬럼명은 반드시 백틱(`)으로 감싸야 SQL 에러가 안 납니다!
             sql = """
-                INSERT INTO recipe (레시피명, 재료, 조리도구, `식사/간식`, 링크) 
-                VALUES (%s, %s, %s, %s, %s)
+                 INSERT INTO recipe (레시피명, 재료, 조리도구, `식사/간식`, 레시피, 링크) 
+                VALUES (%s, %s, %s, %s, %s, %s)
             """
             # %s 를 쓰면 해킹(SQL 인젝션)을 방지하면서 안전하게 데이터를 넣을 수 있습니다.
             cursor.execute(sql, (name, ingredients, tool, category, link))
