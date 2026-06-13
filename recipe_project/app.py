@@ -1,8 +1,8 @@
 from flask import Flask, request, render_template   #파이썬 코드를 웹서버로 만들고, html을 브라우저에 띄워 페이지에서 요청을 받기 위한 모율 가져오기
 from flask_cors import CORS                         #html과 flask가 자유롭게 데이터 주고받을 수 있게 해주는 모듈 가져오기
-import pymysql                                      #파이썬과 마리아디비를 연결하기 위한 모듈 가져오기
+import pymysql                                      #파이썬과 마리아디비를 물리적으로 연결하기 위한 통로
 import pandas as pd                                 #csv를 판다스 데이터프레임으로 불러오기위한 모듈 가져오기
-from sqlalchemy import create_engine, text          #파이썬 객체와 데이터베이스 연결
+from sqlalchemy import create_engine, text          #파이썬 언어를 마리아 db로 번역
 import time                                         #마리아db 켜질 떄까지 기다릴 때 사용
 import re                                           #텍스트 안에서 원하는 패턴만 뽑을 때 사용
 import json
