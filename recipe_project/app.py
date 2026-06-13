@@ -89,16 +89,16 @@ def get_current_recipe_data():
 #================메인페이지('/')=========================
 
 @app.route('/')
-def home():
+def home(): #메인초기 화면 init.html을 렌더링
     return render_template('init.html')
 
 #============레시피 선택('/select_ingredients')============
 
 @app.route('/select_ingredients')
-def select_ingredients():
+def select_ingredients(): #사용자가 재료를 선택할 수 있는 화면을 렌더링하는 라우트
     # 실시간으로 최신 재료 리스트를 불러오기 (첫 번째 반환값은 사용하지 않으므로 _ 처리)
     _, current_ingre_list = get_current_recipe_data()
-    
+    # 2)재료 리스트를 가다가 순으로 정렬 후, 프론트엔드 전송용 딕셔너리 리스트 생성 ({id, namae})
     ingredients_list = [{'id': idx, 'name': name} for idx, name in enumerate(sorted(current_ingre_list))]
     return render_template('select_ingredients.html', ingredients=ingredients_list)
 
