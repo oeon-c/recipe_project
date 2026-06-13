@@ -19,20 +19,25 @@
     </div>
 
     <form action="/recipe_list" method="GET">
-    <!-- 버튼(type="submit")을 누르면, 폼 안에 있는 체크박스 데이터들을 모아서 서버의 /recipe_list 주소로 전송합니다. 데이터를 URL에 붙여서 보내는 GET 방식을 사용 -->
+    <!-- 버튼(type="submit")을 누르면, 폼 안에 있는 체크박스 데이터들을 모아서 서버의 /recipe_list 주소로 전송함 
+    데이터를 URL에 붙여서 보내는 GET 방식을 사용 -->
         <div class="ingredients-list-section">
             <h3 class="section-title">전체 재료 목록</h3>
             <div class="ingredients-grid-container">
                 <div class="ingredients-grid">
-                <!-- 서버에서 넘겨받은 ingredients 변수(재료 리스트)를 활용하는 파이썬(Jinja2) 반복문, 리스트의 개수만큼 체크박스를 반복해서 화면에 그려줌 -->
+                <!-- 서버에서 넘겨받은 ingredients 변수(재료 리스트)를 
+                    활용하는 파이썬(Jinja2) 반복문, 리스트의 개수만큼 체크박스를 반복해서 화면에 그려줌 -->
                     {% if ingredients %}
                         {% for ingredient in ingredients %}
                         <label class="ingredient-item" data-name="{{ ingredient.name }}">
                             <input type="checkbox" class="ingredient-checkbox" name="ingredients" value="{{ ingredient.name }}">
                             <span class="ingredient-name">{{ ingredient.name }}</span>
-                            <!-- name="ingredients" value="{{ ingredient.name }}": 이 체크박스에 체크가 된 상태로 폼이 전송되면, 서버에서는 ingredients라는 이름표로 묶인 여러 개의 value(예: "양파", "당근") 리스트를 받게 됨 -->
+                    <!-- name="ingredients" value="{{ ingredient.name }}": 
+                     이 체크박스에 체크가 된 상태로 폼이 전송되면
+                    서버에서는 ingredients라는 이름표로 묶인 여러 개의 value(예: "양파", "당근") 리스트를 받게 됨 -->
                         </label> 
-                    <!-- 태그로 체크박스와 글자를 함께 묶어두면, 작은 네모 박스가 아니라 글자 부분만 클릭해도 체크가 되기 때문에 사용자 편의성 향상 -->
+                    <!-- 태그로 체크박스와 글자를 함께 묶어두면 
+                    작은 네모 박스가 아니라 글자 부분만 클릭해도 체크가 되기 때문에 사용자 편의성 향상 -->
                         {% endfor %}
                     {% else %}
                         <p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">등록된 재료가 없습니다.</p>
