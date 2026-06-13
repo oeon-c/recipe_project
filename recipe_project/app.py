@@ -63,7 +63,6 @@ def init_db():                #웹 서버 가동 시 csv 데이터 읽어와 마
 engine = init_db()       #init_db()호출해 반환받은 engine을 engine에 저장
 
 # ============== 재료 데이터 최신화 함수 생성 ==============
-# 서버 시작 시 1번만 실행되던 코드를 함수로 만들어, 필요할 때마다 호출하도록 변경
 def get_current_recipe_data():
     #db에서 데이터를 쿼리문으로 조회해 판다스로 가져오기
     df_ingre = pd.read_sql_query("SELECT 레시피명, 재료 FROM recipe", engine)
