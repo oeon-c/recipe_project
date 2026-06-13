@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 모바일 기기 웹페이지 설정-->
     <title>추천 레시피 목록</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -12,18 +12,19 @@
     <div class="selected-ingredients-display" style="text-align: center; margin-bottom: 30px;">
         <h3 style="font-size: 16px; color: #555; margin-bottom: 10px;">선택한 재료 기반 검색 결과</h3>
         <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-            {% if selected_ingredients %}
-                {% for ing in selected_ingredients %}
+            {% if selected_ingredients %} <!-- Jinja2 조건문, 해당 변수에 데이터 존재(True)면 아래 코드 실행 -->
+                {% for ing in selected_ingredients %} <!-- Jinja2 반복문, ing에 리스트 재료들 하나씩 담고 반복 -->
                     <span style="padding: 6px 14px; background-color: #ff5722; color: white; border-radius: 20px; font-size: 14px; font-weight: bold;">{{ ing }}</span>
-                {% endfor %}
+                {% endfor %} <!-- 끝났음을 알리는 닫기 구문 -->
             {% else %}
                 <span style="padding: 6px 14px; background-color: #e0e0e0; color: #555; border-radius: 20px; font-size: 14px;">선택한 재료가 없습니다 (전체 결과 표시)</span>
             {% endif %}
         </div>
     </div>
-    
+
     <div class="recipe-controller" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
         <div class="category-section" style="margin: 0;">
+            <!-- 하나만 선택할 수 있는 radio 버튼 만들고, checked 페이지 로딩시 기본으로 선택되어 있도록 하는 속성-->
             <label class="category-label"><input type="radio" name="recipe-cat" value="전체" checked> <span>전체보기</span></label>
             <label class="category-label" style="margin-left: 15px;"><input type="radio" name="recipe-cat" value="식사"> <span>식사류</span></label>
             <label class="category-label" style="margin-left: 15px;"><input type="radio" name="recipe-cat" value="간식"> <span>간식류</span></label>
@@ -48,6 +49,7 @@
         <tbody id="recipe-table-body">
             {% if recipes %}
                 {% for recipe in recipes %}
+            <!-- data-*: 사용자 정의 데이터 속성 -->
                 <tr class="recipe-row" data-category="{{ recipe.category }}" data-name="{{ recipe.name }}">
                     <td style="font-weight: bold; color: #333;">
                         <a href="/recipe_show?name={{recipe.name}}" style = "color: #333; text-decoration: underline; cursor: pointer;">
@@ -56,7 +58,7 @@
                     </td>
                     <td>
                         <span class="recipe-badge" style="background-color: {{ '#ffe0b2' if recipe.category == '식사' else '#e1f5fe' }}; color: {{ '#ff5722' if recipe.category == '식사' else '#0288d1' }};">
-                            {{ recipe.category }}
+                            {{ recipe.category }} <!-- Jinja2 인라인 삼항 연산자, 식사는 주황색 배경, 아니면 파란색 배경 칠하도록 CSS를 즉석에서 생성함 -->
                         </span>
                     </td>
                     <td style="font-size: 13px; text-align: left;">{{ recipe.ingredients }}</td>
@@ -90,22 +92,28 @@
     </div>
 
     <script>
-        const categoryRadios = document.querySelectorAll('input[name="recipe-cat"]');
-        const recipeSearchInput = document.getElementById('recipe-search-input');
-        const recipeRows = document.querySelectorAll('.recipe-row');
+        const categoryRadios = document.querySelectorAll('input[name="recipe-cat"]'); <!--HTML 문서(DOM) 전체에서 주어진 CSS 선택자 조건에 맞는 모든 요소를 찾아 리스트(NodeList) 형태로 가져옴 -->
+        const recipeSearchInput = document.getElementById('recipe-search-input'); <!-- document.getElementById: 지정한 id 값을 가진 단 하나의 요소를 정확히 찾아 가져옴 -->
+        const recipeRows = document.querySelectorAll('.recipe-row');  
         const recipeTableBody = document.getElementById('recipe-table-body');
 
+
+        <!-- 필터링 작업 수행하는 함수 정의 -->
         function filterRecipes() {
-            const activeCategory = Array.from(categoryRadios).find(r => r.checked).value;
+            const activeCategory = Array.from(categoryRadios).find(r => r.checked).value; 
+        <!-- Array.from(): NodeList를 배열(Array)로 변환, .find(r => r.checked): 화살표 함수를 사용하여 라디오 버튼 중 현재 선택된(checked) 요소를 찾음, .value: 그 요소가 가진 값('전체', '식사', '간식' 중 하나)을 가져옴 -->
             const recipeKeyword = recipeSearchInput.value.trim().toLowerCase();
+        <!-- .trim(): 사용자가 무심코 입력한 앞뒤 공백(띄어쓰기)을 제거함, .toLowerCase(): 영어의 대소문자 구분을 없애기 위해 입력값을 모두 소문자로 변환--> 
             let visibleCount = 0;
 
+        <!-- 찾아둔 모든 테이블의 행 (레시피 데이터들) 하나씩 순회하며 로직 실행 -->
             recipeRows.forEach(row => {
-                const rowCategory = row.getAttribute('data-category');
-                const rowName = row.getAttribute('data-name').toLowerCase();
+                const rowCategory = row.getAttribute('data-category'); <!-- 앞서 HTML <tr> 태그에 심어두었던 data-category 속성 값을 자바스크립트로 읽어옴 -->
+                const rowName = row.getAttribute('data-name').toLowerCase(); 
 
                 const matchesCategory = activeCategory === '전체' || rowCategory === activeCategory;
                 const matchesName = rowName.includes(recipeKeyword);
+        <!-- .includes(): 레시피 이름 안에 사용자가 입력한 검색어(recipeKeyword)가 포함되어 있는지 확인(True/False 반환)-->
 
                 if (matchesCategory && matchesName) {
                     row.style.display = '';
@@ -113,9 +121,11 @@
                 } else {
                     row.style.display = 'none';
                 }
+        <!-- 조건에 맞으면 빈 문자열을 주어 화면에 보이게 유지하고, 조건에 맞지 않으면 CSS display: none 속성을 줘서 화면에서 숨김 -->
             });
 
             // 필터링 결과 다 지워져서 아무것도 안 남았을 때 안내문 처리
+        <!-- 필터링 결과가 하나도 없을 때(visibleCount === 0), <tr> 태그를 자바스크립트로 새로 생성(createElement)하여 테이블의 본문(appendChild)에 안내 문구를 밀어 넣는 동적 UI 처리 -->
             const existingNoResult = document.getElementById('dynamic-no-result');
             if (visibleCount === 0) {
                 if (!existingNoResult && recipeRows.length > 0) {
@@ -132,7 +142,9 @@
         }
 
         categoryRadios.forEach(radio => radio.addEventListener('change', filterRecipes));
-        recipeSearchInput.addEventListener('input', filterRecipes);
+        <!-- addEventListener: 요소에 이벤트(클릭, 입력 등)가 발생하는지 감시 , 라디오 버튼의 상태가 바뀔 때(change)마다 filterRecipes 함수를 실행-->
+        recipeSearchInput.addEventListener('input', filterRecipes); 
+        <!-- 사용자가 검색창에 키보드로 글자를 한 자 한 자 입력할 때(input)마다 실시간으로 함수를 실행하여 검색 결과를 바로 갱신 -->
     </script>
 </body>
 </html>
