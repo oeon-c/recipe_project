@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, text
 import time
 import re
 import json
+import csv
 
 app = Flask(__name__)   #플라스크 앱 생성
 CORS(app)
