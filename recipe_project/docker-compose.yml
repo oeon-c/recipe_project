@@ -2,7 +2,16 @@ version: '3.3'
 
 services:
 
-  # 1. 마리아DB 데이터베이스 서버
+  # 1. nginx
+
+  nginx:
+    image: "nginx"
+    ports:
+      - "5000:80"
+    container_name: recipe_nginx
+
+
+  # 2. 마리아DB 데이터베이스 서버
   
   mariadb:                           
     image: mariadb:latest            # 3. 도커 허브에서 최신(latest) 마리아DB 순정 이미지를 다운받아라
@@ -20,7 +29,7 @@ services:
 
 
 
-  # 2.파이썬 플라스크 웹 서버
+  # 3.파이썬 플라스크 웹 서버
 
   web:                               
     build: .                         # 11. 현재 폴더('.')에 있는 'Dockerfile'을 읽어서 이 컴퓨터를 조립해라
