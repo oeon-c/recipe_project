@@ -6,10 +6,10 @@ services:
   #1. nginx
 
   nginx:
-    image: "nginx"
-    ports:
+    image: "nginx"                  #1) nginx 이미지 가져오기
+    ports:                          #2) 밖과 5000, 안과 80 포트로 연결
       - "5000:80"
-    container_name: recipe_nginx
+    container_name: recipe_nginx    #3) 컨테이너 이름 redipe_nginx로 설정
 
 
   #2. 마리아DB 데이터베이스
@@ -24,7 +24,7 @@ services:
       #MARIADB_USER: user
       #MARIADB_PASSWORD: password
     ports:
-      - "3307:3306"                    #5) 밖에서는 3306 포트로 안에서는 3307 포트로 연결 (호스트 포트 : 도커 내부 포트)
+      - "3307:3306"                    #5) 밖과 3306 포트로 안과 3307 포트로 연결 (호스트 포트 : 도커 내부 포트)
     volumes:
       - mariadb_data:/var/lib/mysql    #6) 컨테이너와 /var/lib/mysql 연결 (호스트 경로:컨테이너 경로)
 
