@@ -2,7 +2,7 @@ from flask import Flask, request, render_template   #파이썬 코드를 웹서�
 from flask_cors import CORS                         #html과 flask가 자유롭게 데이터 주고받을 수 있게 해주는 모듈 가져오기
 import pymysql                                      #파이썬과 마리아디비를 물리적으로 연결하기 위한 통로
 import pandas as pd                                 #csv를 판다스 데이터프레임으로 불러오기위한 모듈 가져오기
-from sqlalchemy import create_engine, text          #파이썬 언어를 마리아 db로 번역
+from sqlalchemy import create_engine, text          #파이썬 언어를 마리아 db에게 번역
 import time                                         #마리아db 켜질 떄까지 기다릴 때 사용
 import re                                           #텍스트 안에서 원하는 패턴만 뽑을 때 사용
 import json
@@ -15,7 +15,7 @@ CORS(app)
 #==========데이터 불러오기=============
 #1. mariadb 가져오기
 def get_db_connection():
-    return pymysql.connect(
+    return pymysql.connect(        #pymysql로 mariadb 연결하기
         host='mariadb',    #도커에서 실행할 때
         #host='127.0.0.1',    #python에서 
         port=3306,        #도커에서 실행할 떄
@@ -24,32 +24,34 @@ def get_db_connection():
         password='1234',
         db='recipe_db',
         charset='utf8',
-        cursorclass=pymysql.cursors.DictCursor
+        cursorclass=pymysql.cursors.DictCursor    #딕셔너리 형태로 데이터베이스 가져오기
     )
 
 
-def init_db():        #웹 서버 가동 시 csv 데이터 읽어와 마리아 DB를 자동으로 세팅하는 초기화 함수
+def init_db():                #웹 서버 가동 시 csv 데이터 읽어와 마리아 DB를 자동으로 세팅하는 초기화 함수
     #2. 엔진 만들기 
-    for i in range(5):        #
+    for i in range(5):        #mariadb가 연결되기 전 flask가 실행되어 발생하는 오류 방지
         try:
+            #pymysql 위에서 파이썬 명령 번역하는 sqlalchemy engine 만들기
             engine = create_engine('mysql+pymysql://root:1234@mariadb:3306/recipe_db')     #docker에서 돌릴 때 사용
             #engine = create_engine('mysql+pymysql://root:1234@127.0.0.1:3307/recipe_db')      #로컬에서 돌릴 때 사용
             with engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
+                conn.execute(text("SELECT 1"))    #engine.connect() 함수로 db가 켜졌는지 확인
             break
         except:
-            print(f"DB 대기 중...({i}/5)")
+            print(f"DB 대기 중...({i}/5)")          #아직 켜지지 않았다면 대기
             time.sleep(3)
             
 
     #3. csv를 판다스 dataframe으로 불러오기
-    df = pd.read_csv("recipe_data6.csv")
-    df.to_sql(name='recipe', con=engine, if_exists='replace', index=False)
+    df = pd.read_csv("recipe_data6.csv")                                        #csv를 판다스 데이터프레임으로 가져오기
+    df.to_sql(name='recipe', con=engine, if_exists='replace', index=False)      #데이터프레임을 mariadb 데이터베이스로 가져오기
 
     
     #4. 엔진으로 df와 db 연결
     with engine.connect() as conn:
         try:
+            #마리아db의 행 개수 세어보기
             count = conn.execute(text("SELECT COUNT(*) FROM recipe")).scalar()
             if count > 0:
                 print("이미 데이터 있음 -스킵")
@@ -58,28 +60,29 @@ def init_db():        #웹 서버 가동 시 csv 데이터 읽어와 마리아 D
             pass
     return engine        #engine 반환
 
-engine = init_db()
+engine = init_db()       #init_db()호출해 반환받은 engine을 engine에 저장
 
 # ============== 재료 데이터 최신화 함수 생성 ==============
 # 서버 시작 시 1번만 실행되던 코드를 함수로 만들어, 필요할 때마다 호출하도록 변경
 def get_current_recipe_data():
+    #db에서 데이터를 쿼리문으로 조회해 판다스로 가져오기
     df_ingre = pd.read_sql_query("SELECT 레시피명, 재료 FROM recipe", engine)
 
     new_ingre_columns = []
-    for row_text in df_ingre["재료"]:
-        comma_split = row_text.split(",")
+    for row_text in df_ingre["재료"]:                #df_ingre["재료"]를 한 줄씩 읽어
+        comma_split = row_text.split(",")           #콤마 단위로 나눈 것을 comma_split 리스트로 저장
         one_recipe_list = []
-        for item in comma_split:
-            space_split = item.split(" ")
+        for item in comma_split:                    #comma_split 리스트의 원소 하나씩 읽어
+            space_split = item.split(" ")           #공백 단위로 나눈 것을 one_recipe_list에 저장
             one_recipe_list.append(space_split)
-        new_ingre_columns.append(one_recipe_list)
+        new_ingre_columns.append(one_recipe_list)   #new_ingre_columns 리스트에 완성된 ["계란", "1개"] 형태 데이터를 하나씩 넣기
     
-    df_ingre["재료"] = new_ingre_columns
+    df_ingre["재료"] = new_ingre_columns             #리스트로 df 재료열 덮어씌우기  
 
     ingre_set = set()
     for i in df_ingre["재료"]:
         for j in i:
-            ingre_set.add(j[0])
+            ingre_set.add(j[0])                    #재료 집합 만들어 중복 제거
             
     ingre_list = list(ingre_set)
     
