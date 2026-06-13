@@ -2,6 +2,7 @@ version: '3.3'
 
 services:
 
+
   #1. nginx
 
   nginx:
@@ -11,7 +12,7 @@ services:
     container_name: recipe_nginx
 
 
-  #2. 마리아DB 데이터베이스 서버
+  #2. 마리아DB 데이터베이스
   
   mariadb:                           
     image: mariadb:latest            #1) 도커 허브에서 latest 마리아DB 순정 이미지를 다운받기
@@ -48,4 +49,4 @@ services:
 #4. 저장공간 설정
 
 volumes:
-  mariadb_data:                      #위에서 사용한 'mariadb_data'라는 안전한 저장 공간을 진짜로 생성해라
+  mariadb_data:                      #컨테이너를 삭제해도 데이터베이스 내용이 날아가지 않도록 저장공간 생성
