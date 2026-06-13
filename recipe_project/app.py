@@ -108,34 +108,34 @@ def select_ingredients(): #사용자가 재료를 선택할 수 있는 화면을
 def recipe_list_page():
     recipes_list = []
     selected_ingredients = []
-    try:
+    try: #1) url 파라미터에서 사용자가 선택한 재료 리스트 가져오기 
         selected_ingredients = request.args.getlist('ingredients')
 
-        # 실시간 최신 데이터프레임 불러오기
+        #데이터프레임으로 부터 실시간 최신 레시피-재료 매팅 데이터 불러오기
         current_df_ingre, _ = get_current_recipe_data()
-
+        #사용자가 선택한 재료를 포함하는 레시피명 필터링
         matched_names = []
-        for idx, row in current_df_ingre.iterrows():
+        for idx, row in current_df_ingre.iterrows(): #선택한 재료가 없는 경우 모든 레시피를 매칭 목록에 추가
             if len(selected_ingredients) == 0:
                 matched_names.append(row['레시피명'])
-            else:
+            else: #선택한 재료 중 하나라도 레시피의 재료 그룹에 퐘되어 있는지 확인 
                 for ing in selected_ingredients:
-                    for ingre_group in row['재료']:
+                    for ingre_group in row['재료']: #INGRE_GROUP[0]이 재료명인 경우 매칭 성공 
                         if ing == ingre_group[0]:
                             matched_names.append(row['레시피명'])
-                            break
-        
+                            break #중복 추가 방지를 위해 가장 안쪽 LOOP 탈출
+        #디버깅을 위한 콘솔  로그 출력
         print(f"선택 재료: {selected_ingredients}")
         print(f"매칭된 레시피: {matched_names}")
-
+        # DB 연결 및 매칭된 레시피 데이터 상세 조회
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        if matched_names:
-            placeholders = ', '.join(['%s'] * len(matched_names))
+        if matched_names: #매칭된 레시피명이 하나라도 존재하는 경우 sql 쿼리 실행
+            placeholders = ', '.join(['%s'] * len(matched_names)) #SQL injection 방지를 위한 동적 placeholder 생성 
             cursor.execute(f"SELECT * FROM recipe WHERE 레시피명 IN ({placeholders})", matched_names)
             all_recipes = cursor.fetchall()
-            
+            #db 조회 결과를 프론트 엔드 전송용 딕셔너리 리스트로 변환, none 값 대응 예외 처리
             for row in all_recipes:
                 recipes_list.append({
                     'name': row.get('레시피명') or '-',
@@ -147,12 +147,12 @@ def recipe_list_page():
                     'basic_tools': row.get('기본 조리도구') or '-',
                     'extra_tools': row.get('추가 조리도구') or '-'
                 })
-        conn.close()
+        conn.close() #db연결 종료
 
-    except Exception as e:
+    except Exception as e: #오류 발생시 에러 메세지 출력 및 안전한 예외 처리 + 필요에 따른 로깅 추가 기능
         print(f"레시피 목록 로드 중 에러 발생: {e}")
         recipes_list = []
-
+    # 최종 매칭된 레시피 리스트를 템플릿에 전달하여 화면 렌더링
     return render_template('recipe_list.html', recipes=recipes_list, selected_ingredients=selected_ingredients)
 
 #==================레시피 상세화면====================
