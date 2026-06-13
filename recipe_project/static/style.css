@@ -1,3 +1,76 @@
+/* ==========================================
+   메인 페이지 (Index) 전용 스타일
+   ========================================== */
+
+.main-body {
+    background-color: #fafafa;
+    margin: 0;
+    padding: 0;
+}
+
+.main-container {
+    max-width: 500px;
+    padding: 40px 30px;
+    margin: 80px auto 20px auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.main-title {
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-link {
+    text-decoration: none;
+    width: 100%;
+    display: block;
+}
+
+/* 버튼 공통 스타일 */
+.btn {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 14px 0;
+    border-radius: 8px;
+    box-sizing: border-box;
+    text-align: center;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+}
+
+.btn:hover {
+    opacity: 0.85; /* 마우스 오버 시 클릭할 수 있는 느낌을 주기 위한 효과 */
+}
+
+/* 강조 버튼 (주황색) */
+.btn-primary {
+    background-color: #ff5722;
+    color: #ffffff;
+    border: none;
+}
+
+/* 일반 버튼 (흰색) */
+.btn-secondary {
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid #ddd;
+}
+
 .box-container-center {
     display: flex;               /* 내부 요소들을 정렬할 수 있는 컨테이너로 선언 */
     justify-content: center;     /* 가로 기준 정렬: center(가운데), flex-end(우측), space-between(양끝) */
