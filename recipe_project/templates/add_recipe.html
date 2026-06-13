@@ -2,41 +2,56 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>레시피 추가하기</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>🍳 나만의 자취 레시피 등록</h1>
+    <h1 style="text-align: center; margin-top: 40px; color: #333;">나만의 자취 레시피 등록</h1>
     
-    <form action="/add_recipe" method="POST">
-        <p>
-            <strong>레시피명:</strong><br>
-            <input type="text" name="recipe_name" placeholder="예: 간장계란밥" required>
-        </p>
-        <p>
-            <strong>재료:</strong><br>
-            <input type="text" name="ingredients" placeholder="예: 계란 1개, 간장 1스푼" required>
-        </p>
-        <p>
-            <strong>조리도구:</strong><br>
-            <input type="text" name="tool" placeholder="예: 가스레인지, 프라이팬">
-        </p>
-        <p>
-            <strong>식사/간식:</strong><br>
-            <select name="category">
-                <option value="식사">식사</option>
-                <option value="간식">간식</option>
-            </select>
-        </p>
-        <p>
-            <strong>참고 링크 (또는 레시피 설명):</strong><br>
-            <input type="text" name="link" placeholder="유튜브 링크 등을 적어주세요">
-        </p>
-        
-        <button type="submit">DB에 등록하기</button>
-    </form>
+    <div class="recipe-table-container" style="max-width: 500px; padding: 30px; margin: 20px auto; background-color: #f9f9f9; border-radius: 8px; box-sizing: border-box;">
+        <form action="/add_recipe" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+            
+            <div>
+                <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">레시피명:</label>
+                <input type="text" name="recipe_name" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0;" placeholder="예: 간장계란밥" required>
+            </div>
+            
+            <div>
+                <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">재료:</label>
+                <input type="text" name="ingredients" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0;" placeholder="예: 계란 1개, 간장 1스푼" required>
+            </div>
+            
+            <div>
+                <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">조리도구:</label>
+                <input type="text" name="tool" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0;" placeholder="예: 가스레인지, 프라이팬">
+            </div>
+            
+            <div>
+                <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">식사/간식:</label>
+                <select name="category" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0; appearance: auto; cursor: pointer;">
+                    <option value="식사">식사</option>
+                    <option value="간식">간식</option>
+                </select>
+            </div>
+            
+            <div>
+                <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">참고 링크 (또는 레시피 설명):</label>
+                <input type="text" name="link" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0;" placeholder="유튜브 링크 등을 적어주세요">
+            </div>
+            
+            <div style="text-align: center; margin-top: 15px;">
+                <button type="submit" class="text-box" style="background-color: #ff5722; color: white; border: none; cursor: pointer; font-size: 16px; padding: 12px 20px; width: 100%; border-radius: 8px; font-weight: bold;">
+                    DB에 등록하기
+                </button>
+            </div>
+        </form>
+    </div>
     
-    <br>
-    <a href="/">🏠 메인 화면으로 돌아가기</a>
+    <div class="box-container-center" style="margin-bottom: 50px;">
+        <a href="/" style="text-decoration: none;">
+            <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">메인 화면으로 돌아가기</span>
+        </a>
+    </div>
 </body>
 </html>
-
