@@ -1,21 +1,15 @@
 FROM python:3.10-slim
 
+##/app 디렉토리를 만들고 작업실로 설정
 WORKDIR /app
 
+##파이썬, 템플릿, static 폴더를 현재폴더(.)로 가져오기
 COPY app.py .
 COPY templates/ ./templates/
-COPY static/ ./static/ 
+COPY static/ ./static/
 
+##필요한 패키지를 컨테이너에 설치
 RUN pip install flask pymysql flask-cors pandas sqlalchemy
 
-## 패키지 명단 먼저 복사하고 설치
-#COPY requirements.txt .
-#RUN pip install --no-cache-dir -r requirements.txt
-#RUN pup install pymysql
-
-
-## 나머지 내 소스코드와 CSV 파일들을 통째로 복사
-#COPY . .
-
-# 실행할 파일 이름 지정
+##실행할 프로그램과 파일 지정
 CMD ["python", "app.py"]
