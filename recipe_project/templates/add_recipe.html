@@ -34,15 +34,20 @@
                     <option value="간식">간식</option>
                 </select>
             </div>
+
+            <div>
+                <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">레시피 설명 (조리 과정):</label>
+                <textarea name="recipe_desc" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0; min-height: 100px; resize: vertical; font-family: inherit;" placeholder="예: 1. 계란을 푼다. 2. 밥과 비빈다." required></textarea>
+            </div>
             
             <div>
-                <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">참고 링크 (또는 레시피 설명):</label>
+                <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">참고 링크:</label>
                 <input type="text" name="link" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0;" placeholder="유튜브 링크 등을 적어주세요">
             </div>
             
             <div style="text-align: center; margin-top: 15px;">
                 <button type="submit" class="text-box" style="background-color: #ff5722; color: white; border: none; cursor: pointer; font-size: 16px; padding: 12px 20px; width: 100%; border-radius: 8px; font-weight: bold;">
-                    DB에 등록하기
+                    DB 및 CSV에 등록하기
                 </button>
             </div>
         </form>
