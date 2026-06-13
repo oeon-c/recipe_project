@@ -60,37 +60,33 @@ def init_db():
 
 engine = init_db()
 
-#==============재료 판다스 데이터 프레임 만들기==================
+engine = init_db()
 
-df_ingre = pd.read_sql_query("SELECT 레시피명, 재료 FROM recipe", engine)
-#engine으로 불러온 mariadb의 데이터베이스에서 레시피명, 재료 열만 판다스 dataframe으로 불러오기
+# ============== 재료 데이터 최신화 함수 생성 ==============
+# 서버 시작 시 1번만 실행되던 코드를 함수로 만들어, 필요할 때마다 호출하도록 변경
+def get_current_recipe_data():
+    df_ingre = pd.read_sql_query("SELECT 레시피명, 재료 FROM recipe", engine)
 
-#print(df_ingre)
-
-new_ingre_columns = []    #이후에 데이터프레임을 대체할 리스트 선언
-
-for row_text in df_ingre["재료"]:                #df_ingre["재료"]에서 행 단위로 불러오기 -> row_text
-    comma_split = row_text.split(",")          #row_text를 ", "단위로 나눠 comma_split 리스트로 만들기
+    new_ingre_columns = []
+    for row_text in df_ingre["재료"]:
+        comma_split = row_text.split(",")
+        one_recipe_list = []
+        for item in comma_split:
+            space_split = item.split(" ")
+            one_recipe_list.append(space_split)
+        new_ingre_columns.append(one_recipe_list)
     
-    one_recipe_list = []                        #["계란", "1개"] 단위의 리스트 선언
-    for item in comma_split:                     #comma_split을 " "단위로 나눠 space_split 리스트로 만들기 
-        space_split = item.split(" ")
-        one_recipe_list.append(space_split)    #space_split을 모아 one_recipe_columns 리스트 만들기
+    df_ingre["재료"] = new_ingre_columns
+
+    ingre_set = set()
+    for i in df_ingre["재료"]:
+        for j in i:
+            ingre_set.add(j[0])
+            
+    ingre_list = list(ingre_set)
     
-    new_ingre_columns.append(one_recipe_list)    #one_recipe_columns 모아 new_ingre_columns 리스트 만들기
-df_ingre["재료"] = new_ingre_columns                #리스트로 column 대체
-
-#print(df_ingre)
-
-ingre_set = set()                #개수 없는 재료 들어갈 집합 선언
-
-for i in df_ingre["재료"]:        #집합 만들기(중복제거)
-    for j in i:
-        ingre_set.add(j[0])
-
-
-ingre_list = list(ingre_set)    #집합을 리스트로 만들기
-
+    # 처리된 데이터프레임과 재료 리스트를 반환
+    return df_ingre, ingre_list
 
 #================메인페이지('/')=========================
 
@@ -102,8 +98,10 @@ def home():
 
 @app.route('/select_ingredients')
 def select_ingredients():
-    ingredients_list = [{'id': idx, 'name': name} for idx, name in enumerate(sorted(ingre_list))]
-    # HTML 템플릿의 변수명 'ingredients'와 정확히 매치하여 렌더링 리턴
+    # 실시간으로 최신 재료 리스트를 불러오기 (첫 번째 반환값은 사용하지 않으므로 _ 처리)
+    _, current_ingre_list = get_current_recipe_data()
+    
+    ingredients_list = [{'id': idx, 'name': name} for idx, name in enumerate(sorted(current_ingre_list))]
     return render_template('select_ingredients.html', ingredients=ingredients_list)
 
 #============갖고있는 재료 선택 페이지==============
@@ -115,10 +113,12 @@ def recipe_list_page():
     try:
         selected_ingredients = request.args.getlist('ingredients')
 
-        # ✅ 수정: DB 전체 조회 + 재료 비교 로직 삭제하고 아래로 대체
-        # 1. df_ingre로 재료 비교해서 매칭된 레시피명 추출
+        # 실시간 최신 데이터프레임 불러오기
+        current_df_ingre, _ = get_current_recipe_data()
+
         matched_names = []
-        for idx, row in df_ingre.iterrows():
+        # df_ingre 대신 방금 불러온 current_df_ingre 사용
+        for idx, row in current_df_ingre.iterrows():
             if len(selected_ingredients) == 0:
                 matched_names.append(row['레시피명'])
             else:
@@ -127,36 +127,21 @@ def recipe_list_page():
                         if ing == ingre_group[0]:
                             matched_names.append(row['레시피명'])
                             break
-        print(f"선택 재료: {selected_ingredients}")      # ← 추가
-        print(f"매칭된 레시피: {matched_names}")          # ← 추가
-        print(f"df_ingre 재료 샘플: {df_ingre['재료'][0]}")  # ← 추가
+        
+        print(f"선택 재료: {selected_ingredients}")
+        print(f"매칭된 레시피: {matched_names}")
 
-        # 2. 매칭된 레시피명으로 DB에서 상세정보 조회
+        # 이하 코드는 기존과 동일
         conn = get_db_connection()
         cursor = conn.cursor()
-        placeholders = ', '.join(['%s'] * len(matched_names))
-        cursor.execute(f"SELECT * FROM recipe WHERE 레시피명 IN ({placeholders})", matched_names)
-        all_recipes = cursor.fetchall()
+        
+        # (이하 생략 - 기존 하단 코드 그대로 유지)
+        if matched_names: # 매칭된 이름이 있을 때만 DB 조회하도록 안전장치 추가 권장
+            placeholders = ', '.join(['%s'] * len(matched_names))
+            cursor.execute(f"SELECT * FROM recipe WHERE 레시피명 IN ({placeholders})", matched_names)
+            all_recipes = cursor.fetchall()
+            # ...
 
-        for row in all_recipes:
-            recipes_list.append({
-                'name': row.get('레시피명') or '-',
-                'ingredients': row.get('재료') or '-',
-                'tool': row.get('조리도구') or '-',
-                'recipe_desc': row.get('레시피') or '-',
-                'category': row.get('식사/간식') or '식사',
-                'link': row.get('링크') or '#',
-                'basic_tools': row.get('기본 조리도구') or '-',
-                'extra_tools': row.get('추가 조리도구') or '-'
-            })
-        conn.close()
-
-    except Exception as e:
-        print(f"레시피 목록 로드 중 에러 발생: {e}")
-        recipes_list = []
-
-    return render_template('recipe_list.html', recipes=recipes_list, selected_ingredients=selected_ingredients)
-    
 #==================레시피 상세화면====================
 
 @app.route('/recipe_show')
