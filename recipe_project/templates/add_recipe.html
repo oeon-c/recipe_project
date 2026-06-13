@@ -1,62 +1,65 @@
-<!DOCTYPE html>
+<!DOCTYPE html> <!--문서형식선언명령어-->
 <html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>레시피 추가하기</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1 style="text-align: center; margin-top: 40px; color: #333;">나만의 자취 레시피 등록</h1>
+    <head> <!-- 화면에 안보임, 웹 브라우저나 검색 엔진이 알아야할 설정 정보 -->
+        <meta charset="UTF-8"> <!-- 문서의 부가 정보, 문자 인코딩 규칙 -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>레시피 추가하기</title> <!-- 브라우저 탭 상단에 표시되는 제목 -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>  <!-- 실제 눈에 보이는 화면 구성 -->
+        <h1 style="text-align: center; margin-top: 40px; color: #333;">나만의 자취 레시피 등록</h1>
+        <!--타이틀 작성-->
     
-    <div class="recipe-table-container" style="max-width: 500px; padding: 30px; margin: 20px auto; background-color: #f9f9f9; border-radius: 8px; box-sizing: border-box;">
-        <form action="/add_recipe" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
-            
+        <div class="recipe-table-container" style="max-width: 500px; padding: 30px; margin: 20px auto; background-color: #f9f9f9; border-radius: 8px; box-sizing: border-box;">
+            <!-- 표 내용으로 들어갈 부분 묶어주기-->
+            <form action="/add_recipe" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- 각 부분이 csv 파일의 열에 들어갈 내용을 작성하는 부분 -->
+            <!--레시피명-->
             <div>
                 <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">레시피명:</label>
                 <input type="text" name="recipe_name" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0;" placeholder="예: 간장계란밥" required>
             </div>
-            
+            <!--재료-->
             <div>
                 <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">재료:</label>
                 <input type="text" name="ingredients" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0;" placeholder="예: 계란 1개, 간장 1스푼" required>
             </div>
-            
+            <!--조리도구-->
             <div>
                 <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">조리도구:</label>
                 <input type="text" name="tool" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0;" placeholder="예: 가스레인지, 프라이팬">
             </div>
-            
+            <!--식사 또는 간식을 선택하도록 함-->
             <div>
                 <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">식사/간식:</label>
                 <select name="category" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0; appearance: auto; cursor: pointer;">
                     <option value="식사">식사</option>
-                    <option value="간식">간식</option>
+                     <option value="간식">간식</option>
                 </select>
             </div>
-
+            <!--레시피 작성 파트-->
             <div>
                 <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">레시피 설명 (조리 과정):</label>
                 <textarea name="recipe_desc" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0; min-height: 100px; resize: vertical; font-family: inherit;" placeholder="예: 1. 계란을 푼다. 2. 밥과 비빈다." required></textarea>
             </div>
-            
+            <!--링크가 있을 시에 추가할 수 있도록 하는 파트-->
             <div>
                 <label style="font-weight: bold; color: #333; display: block; margin-bottom: 5px;">참고 링크:</label>
                 <input type="text" name="link" class="search-bar" style="width: 100%; box-sizing: border-box; border-radius: 8px; margin: 0;" placeholder="유튜브 링크 등을 적어주세요">
             </div>
-            
+            <!--등록 확정 버튼-->
             <div style="text-align: center; margin-top: 15px;">
                 <button type="submit" class="text-box" style="background-color: #ff5722; color: white; border: none; cursor: pointer; font-size: 16px; padding: 12px 20px; width: 100%; border-radius: 8px; font-weight: bold;">
                     DB 및 CSV에 등록하기
                 </button>
             </div>
-        </form>
-    </div>
-    
-    <div class="box-container-center" style="margin-bottom: 50px;">
-        <a href="/" style="text-decoration: none;">
-            <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">메인 화면으로 돌아가기</span>
-        </a>
-    </div>
-</body>
+            </form>
+        </div>
+        <!--메인 화면으로 돌아가는 링크가 연결되어 있는 버튼-->
+        <div class="box-container-center" style="margin-bottom: 50px;">
+            <a href="/" style="text-decoration: none;">
+                <span class="text-box" style="background-color: #e0e0e0; border-color: #ccc; color: #333;">메인 화면으로 돌아가기</span>
+            </a>
+        </div>
+    </body>
 </html>
