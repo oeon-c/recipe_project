@@ -69,7 +69,11 @@
                         {{ recipe.recipe_desc }}
                     </td>
                     <td>
-                        <a href="{{ recipe.link }}" target="_blank" style="color: #ff5722; text-decoration: none; font-weight: bold;">보기</a>
+                        {% if recipe.link and recipe.link != '#' and recipe.link != 'nan' %}
+                            <a href="{{ recipe.link }}" target="_blank" style="color: #ff5722; text-decoration: none; font-weight: bold;">보기</a>
+                        {% else %}
+                            <span style="color: #999;">-</span>
+                        {% endif %}                    
                     </td>
                 </tr>
                 {% endfor %}
