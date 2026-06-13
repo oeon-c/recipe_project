@@ -232,12 +232,12 @@ def recipe_detail_page():
 def add_recipe():
     # 1. 사용자가 [등록하기] 버튼을 눌러서 데이터를 보냈을 때 (POST 방식)
     if request.method == 'POST':
-        name = request.form.get('recipe_name')
-        ingredients = request.form.get('ingredients')
-        tool = request.form.get('tool')
-        category = request.form.get('category')
-        desc = request.form.get('recipe_desc')
-        link = request.form.get('link')
+        name = request.form.get('recipe_name', '')
+        ingredients = request.form.get('ingredients', '')
+        tool = request.form.get('tool', '')
+        category = request.form.get('category', '')
+        desc = request.form.get('recipe_desc', '')
+        link = request.form.get('link', '')
         
         try:
             # DB 창고 문 열기
@@ -245,28 +245,32 @@ def add_recipe():
             cursor = conn.cursor()
             
             # DB에 데이터 밀어넣기 (INSERT)
-            # 주의: '식사/간식' 처럼 특수문자(/)가 들어간 컬럼명은 반드시 백틱(`)으로 감싸야 SQL 에러가 안 납니다!
             sql = """
                  INSERT INTO recipe (레시피명, 재료, 조리도구, `식사/간식`, 레시피, 링크) 
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
-            # %s 를 쓰면 해킹(SQL 인젝션)을 방지하면서 안전하게 데이터를 넣을 수 있습니다.
-            cursor.execute(sql, (name, ingredients, tool, category, link))
+            # 기존 코드 에러 수정: SQL의 %s 개수(6개)에 맞게 desc 변수를 추가로 전달합니다.
+            cursor.execute(sql, (name, ingredients, tool, category, desc, link))
             
             # 저장 확정 짓고 문 닫기
             conn.commit()
             conn.close()
             
+            # CSV 파일에 데이터 추가 (Append 모드)
+            # 파일 구조: 레시피명, 재료, 조리도구, 레시피, 식사/간식, 링크, (빈열), (빈열)
+            with open('recipe_data6.csv', mode='a', encoding='utf-8-sig', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([name, ingredients, tool, desc, category, link, '', ''])
+            
             # 성공했다는 팝업창을 띄우고 메인 화면('/')으로 튕겨냅니다.
             return "<script>alert('레시피가 성공적으로 추가되었습니다!'); window.location.href='/';</script>"
             
         except Exception as e:
-            print(f"레시피 추가 중 DB 에러: {e}")
+            print(f"레시피 추가 중 DB/CSV 에러: {e}")
             return f"데이터를 저장하는 중 에러가 발생했습니다: {e}"
 
     # 2. 그냥 링크를 타고 처음 접속했을 때 (GET 방식) -> 빈 폼 화면 보여주기
     return render_template('add_recipe.html')
-
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
