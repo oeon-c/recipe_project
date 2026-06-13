@@ -24,15 +24,15 @@
         <div>
             <h3 style="color: #333; margin-bottom: 15px;">조리 방법 (레시피)</h3>
             <p style="white-space: pre-wrap; background-color: #f9f9f9; padding: 20px; border-radius: 5px; color: #555; font-size: 15px; line-height: 1.6;">{{ recipe.recipe_desc }}</p>
-        </div>
+        </div> <!-- white-space: pre-wrap;: 데이터베이스에 저장된 레시피 설명에 엔터키(줄바꿈)가 섞여 있을 때, 줄바꿈을 무시하지 않고 화면에 그대로 띄워주는 매우 중요한 CSS 속성 -->
 
         <div style="margin-top: 40px; display: flex; justify-content: center; gap: 20px;">
             <button onclick="history.back()" style="background-color: #e0e0e0; color: #333; border: none; padding: 12px 25px; border-radius: 5px; font-size: 16px; cursor: pointer;">
-                목록으로 돌아가기
+                <!-- 목록으로 돌아가기, 이전 페이지로 뒤로가기 -->
             </button>
             
             <a href="{{ recipe.link }}" target="_blank" style="background-color: #ff5722; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-size: 16px; text-align: center;">
-                외부 링크 보기
+                <!-- 외부 레시피 링크로 이동, target="_blank" 때문에 현재 창이 안 꺼지고 새 창(새 탭)이 열리면서 링크가 뜸-->
             </a>
             <a href="/" style="text-decoration: none;">
             <span class="text-box" style="background-color: #ff5722; color: white;">처음으로 돌아가기</span>
