@@ -60,8 +60,6 @@ def init_db():
 
 engine = init_db()
 
-engine = init_db()
-
 # ============== 재료 데이터 최신화 함수 생성 ==============
 # 서버 시작 시 1번만 실행되던 코드를 함수로 만들어, 필요할 때마다 호출하도록 변경
 def get_current_recipe_data():
@@ -117,7 +115,6 @@ def recipe_list_page():
         current_df_ingre, _ = get_current_recipe_data()
 
         matched_names = []
-        # df_ingre 대신 방금 불러온 current_df_ingre 사용
         for idx, row in current_df_ingre.iterrows():
             if len(selected_ingredients) == 0:
                 matched_names.append(row['레시피명'])
@@ -131,16 +128,32 @@ def recipe_list_page():
         print(f"선택 재료: {selected_ingredients}")
         print(f"매칭된 레시피: {matched_names}")
 
-        # 이하 코드는 기존과 동일
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # (이하 생략 - 기존 하단 코드 그대로 유지)
-        if matched_names: # 매칭된 이름이 있을 때만 DB 조회하도록 안전장치 추가 권장
+        if matched_names:
             placeholders = ', '.join(['%s'] * len(matched_names))
             cursor.execute(f"SELECT * FROM recipe WHERE 레시피명 IN ({placeholders})", matched_names)
             all_recipes = cursor.fetchall()
-            # ...
+            
+            for row in all_recipes:
+                recipes_list.append({
+                    'name': row.get('레시피명') or '-',
+                    'ingredients': row.get('재료') or '-',
+                    'tool': row.get('조리도구') or '-',
+                    'recipe_desc': row.get('레시피') or '-',
+                    'category': row.get('식사/간식') or '식사',
+                    'link': row.get('링크') or '#',
+                    'basic_tools': row.get('기본 조리도구') or '-',
+                    'extra_tools': row.get('추가 조리도구') or '-'
+                })
+        conn.close()
+
+    except Exception as e:
+        print(f"레시피 목록 로드 중 에러 발생: {e}")
+        recipes_list = []
+
+    return render_template('recipe_list.html', recipes=recipes_list, selected_ingredients=selected_ingredients)
 
 #==================레시피 상세화면====================
 
