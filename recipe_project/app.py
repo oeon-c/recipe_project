@@ -111,9 +111,9 @@ def recipe_list_page():
     try: #1) url 파라미터에서 사용자가 선택한 재료 리스트 가져오기 
         selected_ingredients = request.args.getlist('ingredients')
 
-        #데이터프레임으로 부터 실시간 최신 레시피-재료 매팅 데이터 불러오기
+        # 2) 데이터프레임으로 부터 실시간 최신 레시피-재료 매팅 데이터 불러오기
         current_df_ingre, _ = get_current_recipe_data()
-        #사용자가 선택한 재료를 포함하는 레시피명 필터링
+        # 3) 사용자가 선택한 재료를 포함하는 레시피명 필터링
         matched_names = []
         for idx, row in current_df_ingre.iterrows(): #선택한 재료가 없는 경우 모든 레시피를 매칭 목록에 추가
             if len(selected_ingredients) == 0:
@@ -127,7 +127,7 @@ def recipe_list_page():
         #디버깅을 위한 콘솔  로그 출력
         print(f"선택 재료: {selected_ingredients}")
         print(f"매칭된 레시피: {matched_names}")
-        # DB 연결 및 매칭된 레시피 데이터 상세 조회
+        # 4) DB 연결 및 매칭된 레시피 데이터 상세 조회
         conn = get_db_connection()
         cursor = conn.cursor()
         
@@ -152,50 +152,46 @@ def recipe_list_page():
     except Exception as e: #오류 발생시 에러 메세지 출력 및 안전한 예외 처리 + 필요에 따른 로깅 추가 기능
         print(f"레시피 목록 로드 중 에러 발생: {e}")
         recipes_list = []
-    # 최종 매칭된 레시피 리스트를 템플릿에 전달하여 화면 렌더링
+    # 5) 최종 매칭된 레시피 리스트를 템플릿에 전달하여 화면 렌더링
     return render_template('recipe_list.html', recipes=recipes_list, selected_ingredients=selected_ingredients)
 
 #==================레시피 상세화면====================
 
 @app.route('/recipe_show')
 def recipe_detail_page():
-    # 1. HTML의 a 태그에서 보낸 '?name=레시피이름' 데이터를 수집합니다.
+    # 1) url 파라미터에서 특정 레시피 이름 수집 
     recipe_name = request.args.get('name')
     
-    # 만약 이름이 전달되지 않고 비정상적으로 접근했다면 에러 메시지를 띄웁니다.
+    # 예외 처리: 레시피 이름이 누락된 채 비정상적으로 접근한 경우 400 에러 반환 
     if not recipe_name:
         return "레시피 이름이 전달되지 않았습니다.", 400
         
     recipe_info = {}
-    try:
+    try: #2) db연결 및 단일 레시피 조회 
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 2. 데이터베이스 조회
-        # WHERE 조건절을 사용하여 '레시피명' 열이 전달받은 이름과 정확히 일치하는 데이터만 찾습니다.
-        # %s를 사용하는 이유는 SQL 인젝션(해킹)을 방지하기 위한 안전한 파라미터 바인딩 방식입니다.
+        #SQL injection 방지를 위해 피라미터 바인딩 방식을 사용하여 쿼리 실행
         cursor.execute("SELECT * FROM recipe WHERE 레시피명 = %s", (recipe_name,))
         
-        # 목록을 띄울 때는 fetchall()로 전부 가져왔지만, 
-        # 상세 페이지는 레시피 1개만 필요하므로 fetchone()을 사용하여 단일 행만 가져옵니다.
+       # 상세 페이지는 1개의 레시피 정보만 필요하므로 fetchone() 사용
         row = cursor.fetchone()
         conn.close()
         
         if row:
-            # 3. 링크 전처리 과정 (목록 페이지와 동일하게 깨진 링크를 복구합니다)
+            #3) 데이터 전처리 및 링크 복구 과정 
             raw_link = None
-            # 딕셔너리의 키(열 이름) 중에서 '링크'라는 단어가 포함된 것을 찾습니다.
+            # DB 딕셔너리의 키 중 링크라는 단어가 포함된 컴럼 확인 및 데이터 추출 
             for key, val in row.items():
                 if '링크' in key:
                     raw_link = val
                     break
                     
-            final_link = '#'
+            final_link = '#' #데이터베이스 내의 빈 값이 문자열로 잘못 들어온 경우 전처리 
             if raw_link:
                 clean_link = str(raw_link).strip()
-                # nan, None 등 데이터베이스의 빈 값이 문자열로 넘어온 경우를 걸러냅니다.
+                # 주소에 잘못 포함된 따옴표 제거 
                 if clean_link and clean_link.lower() not in ['nan', 'none', 'null', '#']:
-                    # 잘못 들어간 따옴표를 제거합니다.
                     clean_link = clean_link.replace('"', '').replace("'", "")
                     # 주소가 http로 시작하지 않으면 강제로 https:// 를 붙여 외부 링크 이동이 가능하게 만듭니다.
                     if not clean_link.startswith('http'):
@@ -203,7 +199,7 @@ def recipe_detail_page():
                     else:
                         final_link = clean_link
 
-            # 4. HTML로 넘겨줄 하나의 딕셔너리(객체)로 데이터를 예쁘게 포장합니다.
+            # 4) 프론트엔드로 전달할 최종 레시피 데이터 객처 생성
             recipe_info = {
                 'name': row.get('레시피명') or '-',
                 'ingredients': row.get('재료') or '-',
@@ -212,24 +208,24 @@ def recipe_detail_page():
                 'category': row.get('식사/간식') or '식사',
                 'basic_tools': row.get('기본 조리도구') or '-',
                 'extra_tools': row.get('추가 조리도구') or '-',
-                'link': final_link
+                'link': final_link # 전처리가 완료된 안전한 링크 대입 
             }
         else:
-            # DB에서 이름을 찾지 못한 경우
+            # DB 오류 발생 시 디버깅을 위한 콘솔 에러 로그 출력 
             return "해당 레시피를 찾을 수 없습니다.", 404
             
     except Exception as e:
         print(f"상세 페이지 데이터 조회 중 에러: {e}")
         return "서버 오류가 발생했습니다.", 500
 
-    # 5. 최종 가공된 recipe_info 데이터를 recipe_detail.html 파일로 넘겨주며 화면을 그립니다.
+    # 5) 상세 페이지 템플릿에 데이터 전달 및 화면 렌더링 
     return render_template('recipe_show.html', recipe=recipe_info)
 # ================= 레시피 추가 기능 =================
 
 @app.route('/add_recipe', methods=['GET', 'POST'])
 def add_recipe():
-    # 1. 사용자가 [등록하기] 버튼을 눌러서 데이터를 보냈을 때 (POST 방식)
-    if request.method == 'POST':
+    # 1) 사용자가 작성한 데이터를 전송했을 때(post 요청 처리)
+    if request.method == 'POST': # 프론트엔드 Form 태그 내부의 name 속성값을 기반으로 데이터 수집
         name = request.form.get('recipe_name', '')
         ingredients = request.form.get('ingredients', '')
         tool = request.form.get('tool', '')
@@ -238,37 +234,36 @@ def add_recipe():
         link = request.form.get('link', '')
         
         try:
-            # DB 창고 문 열기
+            # [DB 저장 과정} DB 창고 연결 및 커서 생성 
             conn = get_db_connection()
             cursor = conn.cursor()
             
-            # DB에 데이터 밀어넣기 (INSERT)
+            # 레시피 테이블에 새로운 레코드를 삽입하는 SQL 퀴리문
             sql = """
                  INSERT INTO recipe (레시피명, 재료, 조리도구, `식사/간식`, 레시피, 링크) 
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
-            # 기존 코드 에러 수정: SQL의 %s 개수(6개)에 맞게 desc 변수를 추가로 전달합니다.
+            # SQL의  플레이스홀더 개수와 순서에 맞춰 데이터 매핑 및 실행 
             cursor.execute(sql, (name, ingredients, tool, category, desc, link))
             
-            # 저장 확정 짓고 문 닫기
+            # DB 변경 사항을 최종 확정하고 연결 종료 
             conn.commit()
             conn.close()
             
-            # CSV 파일에 데이터 추가 (Append 모드)
-            # 파일 구조: 레시피명, 재료, 조리도구, 레시피, 식사/간식, 링크, (빈열), (빈열)
+            # CSV 동기화 과정 로컬 CSV 파일 데이터 누적 추가 ( Append 모드)
             with open('recipe_data6.csv', mode='a', encoding='utf-8-sig', newline='') as file:
-                writer = csv.writer(file)
+                writer = csv.writer(file) #데이터프레임 구조와 일치하도록 데이터 배열 작성 
                 writer.writerow([name, ingredients, tool, desc, category, link, '', ''])
             
-            # 성공했다는 팝업창을 띄우고 메인 화면('/')으로 튕겨냅니다.
+            # 등록 성공 시 사용자 알림 팝업을 띄운 뒤, 자바스크립트를 이용해 메인 홈으로 리다이렉트
             return "<script>alert('레시피가 성공적으로 추가되었습니다!'); window.location.href='/';</script>"
             
-        except Exception as e:
+        except Exception as e: #예외 처리: 데이터베이스 반영 혹인 CSV 파일 저장 중 오류 발생 시 에러 로깅 
             print(f"레시피 추가 중 DB/CSV 에러: {e}")
             return f"데이터를 저장하는 중 에러가 발생했습니다: {e}"
 
-    # 2. 그냥 링크를 타고 처음 접속했을 때 (GET 방식) -> 빈 폼 화면 보여주기
+    # 2) 사용자가 주소를 입력해 단순히 처음 진입했을 때 (GET요청 처리)
     return render_template('add_recipe.html')
-
+#6. Flask 웹 애플리케이션 실행 메인 함수 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port = 5000, debug = True)    #이미 점유되어 있으면 5001로 돌려보기
+  app.run(host='0.0.0.0', port = 5000, debug = True)    #debug=True 설정을 통해 코드 변경 시 서버가 자동 재시작되도록 디버그 모드 활성화
