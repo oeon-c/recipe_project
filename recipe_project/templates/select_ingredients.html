@@ -19,16 +19,20 @@
     </div>
 
     <form action="/recipe_list" method="GET">
+    <!-- 버튼(type="submit")을 누르면, 폼 안에 있는 체크박스 데이터들을 모아서 서버의 /recipe_list 주소로 전송합니다. 데이터를 URL에 붙여서 보내는 GET 방식을 사용 -->
         <div class="ingredients-list-section">
             <h3 class="section-title">전체 재료 목록</h3>
             <div class="ingredients-grid-container">
                 <div class="ingredients-grid">
+                <!-- 서버에서 넘겨받은 ingredients 변수(재료 리스트)를 활용하는 파이썬(Jinja2) 반복문, 리스트의 개수만큼 체크박스를 반복해서 화면에 그려줌 -->
                     {% if ingredients %}
                         {% for ingredient in ingredients %}
                         <label class="ingredient-item" data-name="{{ ingredient.name }}">
                             <input type="checkbox" class="ingredient-checkbox" name="ingredients" value="{{ ingredient.name }}">
                             <span class="ingredient-name">{{ ingredient.name }}</span>
-                        </label>
+                            <!-- name="ingredients" value="{{ ingredient.name }}": 이 체크박스에 체크가 된 상태로 폼이 전송되면, 서버에서는 ingredients라는 이름표로 묶인 여러 개의 value(예: "양파", "당근") 리스트를 받게 됨 -->
+                        </label> 
+                    <!-- 태그로 체크박스와 글자를 함께 묶어두면, 작은 네모 박스가 아니라 글자 부분만 클릭해도 체크가 되기 때문에 사용자 편의성 향상 -->
                         {% endfor %}
                     {% else %}
                         <p style="padding: 10px; color: #999; grid-column: 1/-1; text-align: center;">등록된 재료가 없습니다.</p>
@@ -53,9 +57,11 @@
 
     // 1. 선택된 재료 배지 실시간 업데이트 함수
     function updateSelectedBadges() {
-        selectedContainer.innerHTML = '';
+        selectedContainer.innerHTML = ''; <!-- selectedContainer.innerHTML = '';: 함수가 실행될 때마다 일단 상단 박스를 텅 비움(초기화) -->
         checkboxes.forEach(checkbox => {
             if (checkbox.checked) {
+                <!-- 모든 체크 박스 검사해서 체크 되어 있다면
+                재료이름과 빨간색 X버튼을 넣고 그 X버튼에 클림 감지기를 달아서 X를 누르면 원본 체크박스의 체크를 해제하고 화면을 다시 그리도록 설정함 -->
                 const name = checkbox.value;
                 const badge = document.createElement('span');
                 badge.className = 'text-box selected-badge';
@@ -65,7 +71,7 @@
                     checkbox.checked = false;
                     updateSelectedBadges();
                 });
-                selectedContainer.appendChild(badge);
+                selectedContainer.appendChild(badge); <!-- 다 만들어진 배지를 아까 비워둔 상단 박스 안에 하나씩 밀어 넣음 -->
             }
         });
     }
@@ -77,10 +83,11 @@
     // 2. 재료 검색 및 스크롤 이동 기능
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
-            e.preventDefault(); // 💡 중요: 검색창에서 엔터를 쳤을 때 form이 바로 전송되는 현상을 막아줍니다.
+            e.preventDefault(); // 중요: 검색창에서 엔터를 쳤을 때 form이 바로 전송되는 현상을 막아줌
             const keyword = this.value.trim();
             if (!keyword) return;
             let foundItem = null;
+            <!-- HTML에 숨겨둔 data-name 속성을 이용해 모든 재료 항목을 하나씩 순회하며 검색어(keyword)가 포함(includes)되어 있는지 검사 -->
             for (let item of ingredientItems) {
                 const ingredientName = item.getAttribute('data-name');
                 if (ingredientName.includes(keyword)) {
@@ -96,7 +103,8 @@
                 setTimeout(() => {
                     foundItem.style.borderColor = '#ddd';
                     foundItem.style.backgroundColor = 'white';
-                }, 1500);
+                }, 1500); 
+                <!-- 찾은 재료를 눈에 띄게 주황색으로 칠한 다음, 1500밀리초(1.5초) 뒤에 원래 색깔로 서서히 되돌리는 시각적 효과를 줌. 못 찾았을 경우 경고창(alert)만 띄움 -->
             } else {
                 alert(`'${keyword}'은(는) 전체 목록에 등록되어 있지 않은 재료입니다.`);
             }
